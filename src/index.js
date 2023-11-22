@@ -1,6 +1,7 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
+import { gsap } from "gsap";
 
 // app
 const app = document.querySelector("#app");
