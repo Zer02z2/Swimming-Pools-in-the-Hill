@@ -3,14 +3,16 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+//import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { gsap } from "gsap";
 
 //initialize
 let app;
 let camera, controls, scene, renderer;
 let texture, mesh;
-const worldWidth = 100, worldDepth = 100;
+const worldWidth = 256, worldDepth = 256;
 const clock = new THREE.Clock();
+const fiveTone = new THREE.TextureLoader().load("/fiveTone.jpg")
 
 init();
 makePools();
@@ -27,6 +29,9 @@ function init() {
   renderer.shadowMap.enable = true;
   renderer.shadowMap.renderReverseSided = false;
   app.appendChild(renderer.domElement);
+
+  fiveTone.minFilter = THREE.NearestFilter
+  fiveTone.magFilter = THREE.NearestFilter
 
   // scene
   scene = new THREE.Scene();
@@ -89,7 +94,7 @@ function init() {
   //trying out new stuffs from here
   const data = generateHeight(worldWidth, worldDepth);
 
-  const geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
+  let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
   geometry.rotateX(- Math.PI / 2);
 
   const vertices = geometry.attributes.position.array;
@@ -97,19 +102,22 @@ function init() {
   for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
 
     //height of the geometry, j + 1 is the y axis
-    vertices[j + 1] = data[i] * 30;
+    vertices[j + 1] = data[i] * 10;
 
   }
 
-  geometry.computeVertexNormals();
+  //geometry = BufferGeometryUtils.mergeVertices(geometry, 0.1);
+  geometry.computeVertexNormals(true);
 
   //texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
 
-  texture = new THREE.MeshStandardMaterial({
 
-    color: 'rgb(245, 170, 66)',
+  texture = new THREE.MeshToonMaterial({
+
+    color: 'rgb(222, 131, 62)',
     wireframe: false,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
+    gradientMap: fiveTone,
 
   });
   texture.warpS = THREE.RepeatWrapping;
@@ -142,14 +150,14 @@ function generateHeight(width, height) {
 
   for (let j = 0; j < 4; j++) {
 
-    for (let i = 0; i < size; i++) {
+    for (let i = 0, l = 10; i < size; i++) {
 
       const x = i % width, y = ~ ~(i / width);
       data[i] += Math.abs(perlin.noise(x / quality, y / quality, z) * quality * 1.75);
 
     }
 
-    quality *= 3;
+    quality *= 5;
 
   }
 
