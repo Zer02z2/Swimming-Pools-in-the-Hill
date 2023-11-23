@@ -9,7 +9,7 @@ import { gsap } from "gsap";
 let app;
 let camera, controls, scene, renderer;
 let texture, mesh;
-const worldWidth = 256, worldDepth = 256;
+const worldWidth = 100, worldDepth = 100;
 const clock = new THREE.Clock();
 
 init();
@@ -53,11 +53,11 @@ function init() {
 
   // ambient light
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-  //scene.add(ambientLight);
+  scene.add(ambientLight);
 
   // directional light
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(- 60, 10, 40);
+  dirLight.position.set(- 60, 100, 40);
   scene.add(dirLight);
 
   // control
@@ -97,23 +97,31 @@ function init() {
   for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
 
     //height of the geometry, j + 1 is the y axis
-    vertices[j + 1] = data[i] * 10;
+    vertices[j + 1] = data[i] * 30;
 
   }
 
-  texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
+  geometry.computeVertexNormals();
+
+  //texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
+
+  texture = new THREE.MeshStandardMaterial({
+
+    color: 'rgb(245, 170, 66)',
+    wireframe: false,
+    side: THREE.DoubleSide
+
+  });
   texture.warpS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.colorSpace = THREE.SRGBColorSpace;
 
   //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
-  mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
+  mesh = new THREE.Mesh(geometry, texture);
 
-    color: 'green',
-    wireframe: false,
-    side: THREE.DoubleSide
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
 
-  }));
   scene.add(mesh);
 }
 
@@ -141,7 +149,7 @@ function generateHeight(width, height) {
 
     }
 
-    quality *= 5;
+    quality *= 3;
 
   }
 
