@@ -6,6 +6,10 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import Stats from 'three/addons/libs/stats.module.js';
 //import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { gsap } from "gsap";
+import { GUI } from "lil-gui";
+
+// Debug
+const gui = new GUI();
 
 // variables
 let cameraChoice = 1;
@@ -64,17 +68,19 @@ function init() {
     1,
     20000
   );
-  camera.position.set(2000, 1000, 2000);
+  camera.position.set(200, 100, 200);
   camera.lookAt(0, 0, 0);
 
   // axis helper -> X: red, Y: green, Z: blue
-  const axesHelper = new THREE.AxesHelper(5);
+  const axesHelper = new THREE.AxesHelper(500);
   axesHelper.position.y = 0.001; // above the ground slightly
-  //scene.add(axesHelper);
+  scene.add(axesHelper);
+  gui.add(axesHelper, 'visible').name('Axes Helper');
+  gui.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
 
   // grid helper
-  const gridHelper = new THREE.GridHelper(10000, 10000, "#444444", "#cccccc");
-  //scene.add(gridHelper);
+  const gridHelper = new THREE.GridHelper(10000, 1000, "#444444", "#cccccc");
+  scene.add(gridHelper);
 
   // ambient light
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
@@ -154,8 +160,12 @@ function init() {
 
   mesh.receiveShadow = true;
   mesh.castShadow = true;
+  mesh.visible = false;
 
   scene.add(mesh);
+
+  gui.add(mesh, 'visible').name('Mesh Visibility');
+  gui.add(mesh.material, 'wireframe').name('Wireframe');
 
   // stats monitor
   stats = new Stats();
