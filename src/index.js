@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 //import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { gsap } from "gsap";
@@ -13,10 +14,23 @@ let texture, mesh;
 const worldWidth = 256, worldDepth = 256;
 const clock = new THREE.Clock();
 const fiveTone = new THREE.TextureLoader().load("/fiveTone.jpg")
+//controls stuff
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+
+let prevTime = performance.now();
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
 
 init();
 makePools();
 animate();
+
+
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
 
 function init() {
   // app
@@ -65,17 +79,140 @@ function init() {
   dirLight.position.set(- 60, 100, 40);
   scene.add(dirLight);
 
-  // control
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.screenSpacePanning = false;
-  controls.enableRotate = true;
-  controls.rotateSpeed = 0.5;
-  controls.enableZoom = true;
+  // orbit control
+
+  // controls = new OrbitControls(camera, renderer.domElement);
+  // controls.enableDamping = true;
+  // controls.dampingFactor = 0.05;
+  // controls.screenSpacePanning = false;
+  // controls.enableRotate = true;
+  // controls.rotateSpeed = 0.5;
+  // controls.enableZoom = true;
+
+  // first person control
+
   // controls = new FirstPersonControls(camera, renderer.domElement);
   // controls.movementSpeed = 150;
   // controls.lookSpeed = 0.1;
+  // controls.rollSpeed = 1;
+
+  // pointer lock control
+
+  controls = new PointerLockControls(camera, document.body);
+  const blocker = document.getElementById('blocker');
+  const instructions = document.getElementById('instructions');
+
+  instructions.addEventListener('click', function () {
+
+    controls.lock();
+
+  });
+
+  controls.addEventListener('lock', function () {
+
+    instructions.style.display = 'none';
+    blocker.style.display = 'none';
+
+  });
+
+  controls.addEventListener('unlock', function () {
+
+    blocker.style.display = 'block';
+    instructions.style.display = '';
+
+  });
+
+  scene.add(controls.getObject());
+
+  const onKeyDown = (event) => {
+
+    switch (event.code) {
+
+      case 'ArrowUp':
+      case 'KeyW':
+        moveForward = true;
+        break;
+
+      case 'ArrowLeft':
+      case 'KeyA':
+        moveLeft = true;
+        break;
+
+      case 'ArrowDown':
+      case 'KeyS':
+        moveBackward = true;
+        break;
+
+      case 'ArrowRight':
+      case 'KeyD':
+        moveRight = true;
+        break;
+
+    }
+
+  };
+
+  const onKeyUp = (event) => {
+
+    switch (event.code) {
+
+      case 'ArrowUp':
+      case 'KeyW':
+        moveForward = false;
+        break;
+
+      case 'ArrowLeft':
+      case 'KeyA':
+        moveLeft = false;
+        break;
+
+      case 'ArrowDown':
+      case 'KeyS':
+        moveBackward = false;
+        break;
+
+      case 'ArrowRight':
+      case 'KeyD':
+        moveRight = false;
+        break;
+
+    }
+
+  };
+
+  const onMouseDown = (event) => {
+
+    switch (event.button) {
+
+      case 0:
+        moveForward = true;
+        break;
+
+      case 2:
+        moveBackward = true;
+        break;
+    }
+  }
+
+  const onMouseUp = (event) => {
+
+    switch (event.button) {
+
+      case 0:
+        moveForward = false;
+        break;
+
+      case 2:
+        moveBackward = false;
+        break;
+    }
+  }
+
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup', onKeyUp);
+  document.addEventListener('mousedown', onMouseDown);
+  document.addEventListener('mouseup', onMouseUp);
+
 
   // resize
   const onResize = () => {
@@ -84,8 +221,6 @@ function init() {
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-
-    //controls.handleResize();
 
   };
 
@@ -133,6 +268,11 @@ function init() {
   scene.add(mesh);
 }
 
+
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+
+
 function generateHeight(width, height) {
 
   let seed = Math.PI / 4;
@@ -164,6 +304,8 @@ function generateHeight(width, height) {
   return data;
 
 }
+
+//---------------------------------------------------------------------------------
 
 function generateTexture(data, width, height) {
 
@@ -230,15 +372,64 @@ function generateTexture(data, width, height) {
 }
 
 
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+
+
 // animate
 function animate() {
 
   requestAnimationFrame(animate);
 
+  const time = performance.now();
+
+  let lookAtVector = new THREE.Vector3(0,0, -1);
+  lookAtVector.applyQuaternion(camera.quaternion);
+  lookAtVector.normalize();
+
+  console.log(lookAtVector);
+
+  if (controls.isLocked === true) {
+
+    const delta = (time - prevTime) / 1000;
+
+    velocity.x -= velocity.x * 10.0 * delta;
+    velocity.z -= velocity.z * 10.0 * delta;
+
+    velocity.y -= velocity.y * 10.0 * delta; // 100.0 = mass
+
+    direction.z = Math.abs(lookAtVector.z) * (Number(moveForward) - Number(moveBackward));
+    direction.y = - lookAtVector.y * (Number(moveForward) - Number(moveBackward));
+    direction.x = Number(moveRight) - Number(moveLeft);
+    direction.normalize(); // this ensures consistent movements in all directions
+
+    if (moveForward || moveBackward) {
+      
+      velocity.z -= direction.z * 4000.0 * delta;
+      velocity.y -= direction.y * 4000.0 * delta;
+
+    }
+
+    if (moveLeft || moveRight) velocity.x -= direction.x * 4000.0 * delta;
+
+
+    controls.moveRight(- velocity.x * delta);
+    controls.moveForward(- velocity.z * delta);
+
+    controls.getObject().position.y += (velocity.y * delta); // new behavior
+
+  }
+
+  prevTime = time;
+
   renderer.render(scene, camera);
-  controls.update(clock.getDelta());
+  //controls.update(clock.getDelta());
 
 };
+
+//-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------
+
 
 function makePools() {
   // box
