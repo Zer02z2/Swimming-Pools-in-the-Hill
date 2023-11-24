@@ -387,7 +387,7 @@ function animate() {
   lookAtVector.applyQuaternion(camera.quaternion);
   lookAtVector.normalize();
 
-  console.log(lookAtVector);
+  //console.log(lookAtVector);
 
   if (controls.isLocked === true) {
 
