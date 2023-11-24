@@ -7,6 +7,16 @@
   resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.17.19.tgz"
   integrity sha512-lAhycmKnVOuRYNtRtatQR1LPQf2oYCkRGkSFnseDAKPl8lu5SOsK/e1sXe5a0Pc5kHIHe6P2I/ilntNv2xf3cA==
 
+ammo.js@^0.0.10:
+  version "0.0.10"
+  resolved "https://registry.npmjs.org/ammo.js/-/ammo.js-0.0.10.tgz"
+  integrity sha512-jOv977u71jrDUzHfmQ99YaW90/y8YLn/3HFTmtLLzf5wJynAfG+/a1Ie5gbn0fE0uSAHxXVsFk4Bzq8qRPWqAA==
+
+ammojs3@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.npmjs.org/ammojs3/-/ammojs3-0.0.8.tgz"
+  integrity sha512-tZqypfjH+5j7QpWCG7RRjsgAbti726BGKbi1m7yNEnIqB0fxXN3YZB8fQzZckOiIh/O85WXOflsLvm0cvbxWKw==
+
 esbuild@^0.17.5:
   version "0.17.19"
   resolved "https://registry.npmjs.org/esbuild/-/esbuild-0.17.19.tgz"

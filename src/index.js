@@ -1,32 +1,38 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
-import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+import Stats from 'three/addons/libs/stats.module.js';
 //import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { gsap } from "gsap";
 
-//initialize
+// variables
+let cameraChoice = 1;
 let app;
-let camera, controls, scene, renderer;
+let camera, controls, scene, renderer, stats;
 let texture, mesh;
 const worldWidth = 256, worldDepth = 256;
-const clock = new THREE.Clock();
 const fiveTone = new THREE.TextureLoader().load("/fiveTone.jpg")
-//controls stuff
+const clock = new THREE.Clock();
+
+// pointer lock controls
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
-
+let moveUpward = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 
+//physics
+
+
+
 init();
-makePools();
 animate();
+
 
 
 //---------------------------------------------------------------------------------
@@ -79,28 +85,125 @@ function init() {
   dirLight.position.set(- 60, 100, 40);
   scene.add(dirLight);
 
-  // orbit control
+  if (cameraChoice == 1) {
 
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // controls.enableDamping = true;
-  // controls.dampingFactor = 0.05;
-  // controls.screenSpacePanning = false;
-  // controls.enableRotate = true;
-  // controls.rotateSpeed = 0.5;
-  // controls.enableZoom = true;
+    // orbit control
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.enableRotate = true;
+    controls.rotateSpeed = 0.5;
+    controls.enableZoom = true;
 
-  // first person control
+  }
+  else {
 
-  // controls = new FirstPersonControls(camera, renderer.domElement);
-  // controls.movementSpeed = 150;
-  // controls.lookSpeed = 0.1;
-  // controls.rollSpeed = 1;
+    // pointer lock control
+    createControls();
 
-  // pointer lock control
+  }
+
+  // resize
+  const onResize = () => {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+  };
+
+  window.addEventListener("resize", onResize);
+
+  // trying out new stuffs from here
+  const data = generateHeight(worldWidth, worldDepth);
+
+  let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
+  geometry.rotateX(- Math.PI / 2);
+
+  const vertices = geometry.attributes.position.array;
+
+  for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
+
+    // height of the geometry, j + 1 is the y axis
+    vertices[j + 1] = data[i] * 10;
+
+  }
+
+  //geometry = BufferGeometryUtils.mergeVertices(geometry, 0.1);
+  geometry.computeVertexNormals(true);
+
+  //texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
+
+
+  texture = new THREE.MeshToonMaterial({
+
+    color: 'rgb(222, 131, 62)',
+    wireframe: false,
+    side: THREE.DoubleSide,
+    gradientMap: fiveTone,
+
+  });
+  texture.warpS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
+  mesh = new THREE.Mesh(geometry, texture);
+
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
+
+  scene.add(mesh);
+
+  // stats monitor
+  stats = new Stats();
+  document.body.appendChild(stats.dom);
+}
+
+
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+
+
+function generateHeight(width, height) {
+
+  let seed = Math.PI / 4;
+  window.Math.random = () => {
+
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+
+  }
+
+  const size = width * height, data = new Uint8Array(size);
+  const perlin = new ImprovedNoise(), z = Math.random() * 60;
+
+  let quality = 1;
+
+  for (let j = 0; j < 4; j++) {
+
+    for (let i = 0, l = 10; i < size; i++) {
+
+      const x = i % width, y = ~ ~(i / width);
+      data[i] += Math.abs(perlin.noise(x / quality, y / quality, z) * quality * 1.75);
+
+    }
+
+    quality *= 5;
+
+  }
+
+  return data;
+
+}
+
+//--------------------------------------------------------------------------------
+
+function createControls() {
 
   controls = new PointerLockControls(camera, document.body);
-  const blocker = document.getElementById('blocker');
-  const instructions = document.getElementById('instructions');
 
   instructions.addEventListener('click', function () {
 
@@ -148,6 +251,10 @@ function init() {
         moveRight = true;
         break;
 
+      case 'Space':
+        moveUpward = true;
+        break;
+
     }
 
   };
@@ -174,6 +281,10 @@ function init() {
       case 'ArrowRight':
       case 'KeyD':
         moveRight = false;
+        break;
+
+      case 'Space':
+        moveUpward = false;
         break;
 
     }
@@ -213,96 +324,6 @@ function init() {
   document.addEventListener('mousedown', onMouseDown);
   document.addEventListener('mouseup', onMouseUp);
 
-
-  // resize
-  const onResize = () => {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-  };
-
-  window.addEventListener("resize", onResize);
-
-  //trying out new stuffs from here
-  const data = generateHeight(worldWidth, worldDepth);
-
-  let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
-  geometry.rotateX(- Math.PI / 2);
-
-  const vertices = geometry.attributes.position.array;
-
-  for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
-
-    //height of the geometry, j + 1 is the y axis
-    vertices[j + 1] = data[i] * 10;
-
-  }
-
-  //geometry = BufferGeometryUtils.mergeVertices(geometry, 0.1);
-  geometry.computeVertexNormals(true);
-
-  //texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
-
-
-  texture = new THREE.MeshToonMaterial({
-
-    color: 'rgb(222, 131, 62)',
-    wireframe: false,
-    side: THREE.DoubleSide,
-    gradientMap: fiveTone,
-
-  });
-  texture.warpS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.colorSpace = THREE.SRGBColorSpace;
-
-  //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
-  mesh = new THREE.Mesh(geometry, texture);
-
-  mesh.receiveShadow = true;
-  mesh.castShadow = true;
-
-  scene.add(mesh);
-}
-
-
-//--------------------------------------------------------------------------
-//--------------------------------------------------------------------------
-
-
-function generateHeight(width, height) {
-
-  let seed = Math.PI / 4;
-  window.Math.random = () => {
-
-    const x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
-
-  }
-
-  const size = width * height, data = new Uint8Array(size);
-  const perlin = new ImprovedNoise(), z = Math.random() * 60;
-
-  let quality = 1;
-
-  for (let j = 0; j < 4; j++) {
-
-    for (let i = 0, l = 10; i < size; i++) {
-
-      const x = i % width, y = ~ ~(i / width);
-      data[i] += Math.abs(perlin.noise(x / quality, y / quality, z) * quality * 1.75);
-
-    }
-
-    quality *= 5;
-
-  }
-
-  return data;
-
 }
 
 //--------------------------------------------------------------------------------
@@ -314,10 +335,21 @@ function animate() {
 
   requestAnimationFrame(animate);
 
-  updateControls();
+  const blocker = document.getElementById('blocker');
+  const instructions = document.getElementById('instructions');
+
+  if (cameraChoice == 1) {
+
+    instructions.style.display = 'none';
+    blocker.style.display = 'none';
+
+  }
+
+  if (cameraChoice == 2) updateControls();
 
   renderer.render(scene, camera);
-  //controls.update(clock.getDelta());
+
+  stats.update();
 
 };
 
@@ -343,12 +375,12 @@ function updateControls() {
 
     velocity.y -= velocity.y * 10.0 * delta; // 100.0 = mass
 
-    direction.z = Math.abs(lookAtVector.z) * (Number(moveForward) - Number(moveBackward));
-    direction.y = - lookAtVector.y * (Number(moveForward) - Number(moveBackward));
+    direction.z = Math.abs(lookAtVector.z) * ((Number(moveForward) - Number(moveBackward)));
+    direction.y = - lookAtVector.y * ((Number(moveForward) - Number(moveBackward))) - Number(moveUpward) / 2;
     direction.x = Number(moveRight) - Number(moveLeft);
     direction.normalize(); // this ensures consistent movements in all directions
 
-    if (moveForward || moveBackward) {
+    if (moveForward || moveBackward || moveUpward) {
 
       velocity.z -= direction.z * 4000.0 * delta;
       velocity.y -= direction.y * 4000.0 * delta;
