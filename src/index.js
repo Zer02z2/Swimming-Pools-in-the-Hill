@@ -1,8 +1,12 @@
 import "./style.css";
 import * as THREE from "three";
+import { CSG } from "three-csg-ts";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+//import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+//import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import Stats from 'three/addons/libs/stats.module.js';
 //import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { gsap } from "gsap";
@@ -18,7 +22,10 @@ let camera, controls, scene, renderer, stats;
 let texture, mesh;
 let swimmingPool1, swimmingPool2, swimmingPool3, swimmingPool4;
 const worldWidth = 256, worldDepth = 256;
-const fiveTone = new THREE.TextureLoader().load("/fiveTone.jpg")
+const objLoader = new OBJLoader();
+//const mtlLoader = new MTLLoader();
+//const fbxLoader = new FBXLoader();
+const fiveTone = new THREE.TextureLoader().load("/gradientMap/fiveTone.jpg")
 const clock = new THREE.Clock();
 
 // pointer lock controls
@@ -417,6 +424,7 @@ function makePools() {
 
   const swimmingPool = new THREE.Group();
   const waterPool = new THREE.Group();
+  const viewPort = new THREE.Group();
 
   // box
   const baseGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -425,8 +433,26 @@ function makePools() {
   });
 
   // platform
-  const platform = new THREE.Mesh(baseGeometry, baseMaterial);
-  platform.scale.set(48, 10, 15);
+  let platform_P = new THREE.Mesh(baseGeometry);
+  let platform_N = new THREE.Mesh(baseGeometry);
+  platform_P.scale.set(48, 10, 15);
+  platform_N.scale.set(16, 5, 8);
+  platform_N.position.set(
+    1,
+    platform_P.scale.y / 2 - platform_N.scale.y / 2,
+    - platform_P.scale.z / 2 + platform_N.scale.z / 2 + 2
+  );
+
+  platform_P.updateMatrix();
+  platform_N.updateMatrix();
+
+  let platformCSG_P = CSG.fromMesh(platform_P);
+  let platformCSG_N = CSG.fromMesh(platform_N);
+  let platformCSG = platformCSG_P.subtract(platformCSG_N);
+
+  let platform = CSG.toMesh(platformCSG, platform_P.matrix, baseMaterial);
+
+
   swimmingPool.add(platform);
 
   // the pool itself
@@ -437,6 +463,8 @@ function makePools() {
 
   const water = new THREE.Mesh(baseGeometry, waterMaterial);
   water.scale.set(16, 1, 8);
+
+  waterPool.add(water);
 
   // padding
   const makeSide = (length, width, x, z) => {
@@ -459,23 +487,57 @@ function makePools() {
     1,
     platform.scale.y / 2 - (water.scale.y / 2 - 0.1),
     - platform.scale.z / 2 + water.scale.z / 2 + 2
-    );
-  waterPool.add(water);
+  );
   swimmingPool.add(waterPool);
 
   // view port
-  const viewPort = new THREE.Mesh(baseGeometry, baseMaterial);
-  viewPort.scale.set(
+  const viewPlatform = new THREE.Mesh(baseGeometry, baseMaterial);
+  viewPlatform.scale.set(
     platform.scale.x / 3,
     platform.scale.y,
     platform.scale.z / 2
   );
-  viewPort.position.set(
-    - platform.scale.x / 2 + viewPort.scale.x / 2,
-    0,
-    - platform.scale.z / 2 - viewPort.scale.z / 2
+
+  viewPort.add(viewPlatform);
+
+  // armchair
+  objLoader.load(
+
+    '/models/armchair/armchair_.obj',
+    (chair) => {
+      
+      while (chair.children.length > 0) {
+
+        let thisChair = chair.children[0];
+        thisChair.material = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          roughness: 1,
+          gradientMap: fiveTone
+        });
+
+        thisChair.scale.set(0.05, 0.05, 0.05);
+        thisChair.rotation.y = Math.PI/3;
+        thisChair.position.set(-4, platform.scale.y / 2, 2);
+        viewPort.add(thisChair);
+
+      }
+    }
   );
+
+  viewPort.position.set(
+    - platform.scale.x / 2 + viewPlatform.scale.x / 2,
+    0,
+    - platform.scale.z / 2 - viewPlatform.scale.z / 2
+  );
+
   swimmingPool.add(viewPort);
+
+
+
+
+
+
+
 
   // swimming pool
   swimmingPool.scale.set(10, 10, 10);
