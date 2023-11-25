@@ -16,6 +16,7 @@ let cameraChoice = 1;
 let app;
 let camera, controls, scene, renderer, stats;
 let texture, mesh;
+let swimmingPool1, swimmingPool2, swimmingPool3, swimmingPool4;
 const worldWidth = 256, worldDepth = 256;
 const fiveTone = new THREE.TextureLoader().load("/fiveTone.jpg")
 const clock = new THREE.Clock();
@@ -35,6 +36,7 @@ const direction = new THREE.Vector3();
 
 
 init();
+makePools();
 animate();
 
 
@@ -413,59 +415,46 @@ function updateControls() {
 
 function makePools() {
   // box
-  const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshNormalMaterial();
+  const baseGeometry = new THREE.BoxGeometry(1, 1, 1);
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: '#ffffff',
-    wireframe: false,
-    //metalness: 0,
-    //roughness: 0
-  })
-  const baseMaterial0 = new THREE.MeshStandardMaterial({
-    color: '#ededed',
-    //metalness: 0,
-    //roughness: 0
-  })
-  //const boxMesh = new THREE.Mesh(boxGeometry, material);
+  });
 
   const swimmingPool = new THREE.Group();
-  const base = new THREE.Mesh(boxGeometry, baseMaterial0);
-  base.scale.set(15, 1, 10);
-  swimmingPool.add(base);
-  //scene.add(boxMesh);
+  const platform = new THREE.Mesh(baseGeometry, baseMaterial);
+  platform.scale.set(20, 10, 15);
+  swimmingPool.add(platform);
 
   //swimming pool
   const waterMaterial = new THREE.MeshStandardMaterial({
     color: '#005eff',
     metalness: 0.8
   });
-  const water = new THREE.Mesh(boxGeometry, waterMaterial);
-  water.scale.set(6, 1, 5);
-  water.position.set(0, 0.1, 0);
+
+  const waterLength = 10;
+  const waterWidth = 8;
+  const water = new THREE.Mesh(baseGeometry, waterMaterial);
+  water.scale.set(waterLength, 1, waterWidth);
+  water.position.set(0, platform.scale.y / 2 - (water.scale.y / 2 - 0.1), 0);
   swimmingPool.add(water);
 
-  const side1 = new THREE.Mesh(boxGeometry, baseMaterial);
-  const side2 = new THREE.Mesh(boxGeometry, baseMaterial);
-  const side3 = new THREE.Mesh(boxGeometry, baseMaterial);
-  const side4 = new THREE.Mesh(boxGeometry, baseMaterial);
+  const makeSide = (length, width, x, z) => {
 
-  side1.scale.set(8, 1, 1);
-  side2.scale.set(8, 1, 1);
-  side3.scale.set(1, 1, 5);
-  side4.scale.set(1, 1, 5);
+    let side = new THREE.Mesh(baseGeometry, baseMaterial);
 
-  side1.position.set(0, 0.2, 2.5);
-  side2.position.set(0, 0.2, -2.5);
-  side3.position.set(-3.5, 0.2, 0);
-  side4.position.set(3.5, 0.2, 0);
+    side.scale.set(length, 1, width);
+    side.position.set(x, platform.scale.y / 2 - (water.scale.y / 2 - 0.2), z);
 
-  swimmingPool.add(side1);
-  swimmingPool.add(side2);
-  swimmingPool.add(side3);
-  swimmingPool.add(side4);
+    swimmingPool.add(side);
 
+  }
 
-  swimmingPool.position.set(0, 0.5, 0);
+  makeSide(waterLength + 1, 1, 0, waterWidth / 2);
+  makeSide(waterLength + 1, 1, 0, - waterWidth / 2);
+  makeSide(1, waterWidth + 1, - waterLength / 2, 0);
+  makeSide(1, waterWidth + 1, waterLength / 2, 0);
+
+  swimmingPool.scale.set(10, 10, 10);
   scene.add(swimmingPool);
 
 }
