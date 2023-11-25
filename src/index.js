@@ -70,7 +70,7 @@ function init() {
     1,
     20000
   );
-  camera.position.set(200, 100, 200);
+  camera.position.set(200, 200, 200);
   camera.lookAt(0, 0, 0);
 
   // axis helper -> X: red, Y: green, Z: blue
@@ -414,47 +414,76 @@ function updateControls() {
 }
 
 function makePools() {
+
+  const swimmingPool = new THREE.Group();
+  const waterPool = new THREE.Group();
+
   // box
   const baseGeometry = new THREE.BoxGeometry(1, 1, 1);
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: '#ffffff',
   });
 
-  const swimmingPool = new THREE.Group();
+  // platform
   const platform = new THREE.Mesh(baseGeometry, baseMaterial);
-  platform.scale.set(20, 10, 15);
+  platform.scale.set(48, 10, 15);
   swimmingPool.add(platform);
 
-  //swimming pool
+  // the pool itself
   const waterMaterial = new THREE.MeshStandardMaterial({
     color: '#005eff',
     metalness: 0.8
   });
 
-  const waterLength = 10;
-  const waterWidth = 8;
   const water = new THREE.Mesh(baseGeometry, waterMaterial);
-  water.scale.set(waterLength, 1, waterWidth);
-  water.position.set(0, platform.scale.y / 2 - (water.scale.y / 2 - 0.1), 0);
-  swimmingPool.add(water);
+  water.scale.set(16, 1, 8);
 
+  // padding
   const makeSide = (length, width, x, z) => {
 
     let side = new THREE.Mesh(baseGeometry, baseMaterial);
 
     side.scale.set(length, 1, width);
-    side.position.set(x, platform.scale.y / 2 - (water.scale.y / 2 - 0.2), z);
+    side.position.set(x, 0.2, z);
 
-    swimmingPool.add(side);
+    waterPool.add(side);
 
   }
 
-  makeSide(waterLength + 1, 1, 0, waterWidth / 2);
-  makeSide(waterLength + 1, 1, 0, - waterWidth / 2);
-  makeSide(1, waterWidth + 1, - waterLength / 2, 0);
-  makeSide(1, waterWidth + 1, waterLength / 2, 0);
+  makeSide(water.scale.x + 2, 1, 0, water.scale.z / 2 + 0.5);
+  makeSide(water.scale.x + 2, 1, 0, - water.scale.z / 2 - 0.5);
+  makeSide(1, water.scale.z + 2, water.scale.x / 2 + 0.5, 0);
+  makeSide(1, water.scale.z + 2, - water.scale.x / 2 - 0.5, 0);
 
+  waterPool.position.set(
+    1,
+    platform.scale.y / 2 - (water.scale.y / 2 - 0.1),
+    - platform.scale.z / 2 + water.scale.z / 2 + 2
+    );
+  waterPool.add(water);
+  swimmingPool.add(waterPool);
+
+  // view port
+  const viewPort = new THREE.Mesh(baseGeometry, baseMaterial);
+  viewPort.scale.set(
+    platform.scale.x / 3,
+    platform.scale.y,
+    platform.scale.z / 2
+  );
+  viewPort.position.set(
+    - platform.scale.x / 2 + viewPort.scale.x / 2,
+    0,
+    - platform.scale.z / 2 - viewPort.scale.z / 2
+  );
+  swimmingPool.add(viewPort);
+
+  // swimming pool
   swimmingPool.scale.set(10, 10, 10);
+  //swimmingPool.position.set(1247, 951, 263);
   scene.add(swimmingPool);
+
+  gui.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
+  gui.add(swimmingPool.position, 'y', 0, 1000, 1).name('poolY');
+  gui.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
 
 }
