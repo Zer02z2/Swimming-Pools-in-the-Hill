@@ -4,9 +4,7 @@ import { CSG } from "three-csg-ts";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-//import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-//import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import Stats from 'three/addons/libs/stats.module.js';
 //import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { gsap } from "gsap";
@@ -14,6 +12,9 @@ import { GUI } from "lil-gui";
 
 // Debug
 const gui = new GUI();
+const sceneUI = gui.addFolder("Scene");
+const armchariUI = gui.addFolder("Arm chair");
+const couchUI = gui.addFolder("Couch");
 
 // variables
 let cameraChoice = 1;
@@ -22,11 +23,12 @@ let camera, controls, scene, renderer, stats;
 let texture, mesh;
 let swimmingPool1, swimmingPool2, swimmingPool3, swimmingPool4;
 const worldWidth = 256, worldDepth = 256;
-const objLoader = new OBJLoader();
-//const mtlLoader = new MTLLoader();
-//const fbxLoader = new FBXLoader();
-const fiveTone = new THREE.TextureLoader().load("/gradientMap/fiveTone.jpg")
 const clock = new THREE.Clock();
+
+const gltfLoader = new GLTFLoader();
+const threeTone = new THREE.TextureLoader().load("/gradientMap/threeTone.jpg")
+const fourTone = new THREE.TextureLoader().load("/gradientMap/fourTone.jpg")
+const fiveTone = new THREE.TextureLoader().load("/gradientMap/fiveTone.jpg")
 
 // pointer lock controls
 let moveForward = false;
@@ -63,8 +65,9 @@ function init() {
   renderer.shadowMap.renderReverseSided = false;
   app.appendChild(renderer.domElement);
 
-  fiveTone.minFilter = THREE.NearestFilter
-  fiveTone.magFilter = THREE.NearestFilter
+  threeTone.minFilter = threeTone.magFilter =
+    fourTone.minFilter = fourTone.magFilter =
+    fiveTone.minFilter = fiveTone.magFilter = THREE.NearestFilter;
 
   // scene
   scene = new THREE.Scene();
@@ -84,8 +87,8 @@ function init() {
   const axesHelper = new THREE.AxesHelper(500);
   axesHelper.position.y = 0.001; // above the ground slightly
   scene.add(axesHelper);
-  gui.add(axesHelper, 'visible').name('Axes Helper');
-  gui.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
+  sceneUI.add(axesHelper, 'visible').name('Axes Helper');
+  sceneUI.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
 
   // grid helper
   const gridHelper = new THREE.GridHelper(10000, 1000, "#444444", "#cccccc");
@@ -173,8 +176,8 @@ function init() {
 
   scene.add(mesh);
 
-  gui.add(mesh, 'visible').name('Mesh Visibility');
-  gui.add(mesh.material, 'wireframe').name('Wireframe');
+  sceneUI.add(mesh, 'visible').name('Mesh Visibility');
+  sceneUI.add(mesh.material, 'wireframe').name('Wireframe');
 
   // stats monitor
   stats = new Stats();
@@ -490,40 +493,77 @@ function makePools() {
   );
   swimmingPool.add(waterPool);
 
-  // view port
+  // view port, build vew platform
   const viewPlatform = new THREE.Mesh(baseGeometry, baseMaterial);
   viewPlatform.scale.set(
     platform.scale.x / 3,
-    platform.scale.y,
-    platform.scale.z / 2
+    platform.scale.y - 2,
+    platform.scale.z / 1.5
   );
 
   viewPort.add(viewPlatform);
 
-  // armchair
-  objLoader.load(
+  // import armchair
+  gltfLoader.load(
 
-    '/models/armchair/armchair_.obj',
+    '/models/armchair/armchair.glb',
     (chair) => {
-      
-      while (chair.children.length > 0) {
 
-        let thisChair = chair.children[0];
+      let chairModel = new THREE.Group();
+      while (chair.scene.children.length > 0) {
+
+        let thisChair = chair.scene.children[0];
         thisChair.material = new THREE.MeshToonMaterial({
           color: '#ffffff',
-          roughness: 1,
           gradientMap: fiveTone
         });
 
-        thisChair.scale.set(0.05, 0.05, 0.05);
-        thisChair.rotation.y = Math.PI/3;
-        thisChair.position.set(-4, platform.scale.y / 2, 2);
-        viewPort.add(thisChair);
+        chairModel.add(thisChair);
 
       }
+
+      chairModel.scale.set(0.05, 0.05, 0.05);
+      chairModel.rotation.y = Math.PI / 3;
+      chairModel.position.set(-4, viewPlatform.scale.y / 2, 2);
+      viewPort.add(chairModel);
+
+      armchariUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
+      armchariUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Y");
+      armchariUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
+
     }
   );
 
+  // import couch
+  gltfLoader.load(
+
+    '/models/couch/couch.glb',
+    (couch) => {
+      let couchModel = new THREE.Group();
+      while (couch.scene.children.length > 0) {
+
+        let thisCouch = couch.scene.children[0];
+        thisCouch.material = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          gradientMap: fiveTone
+        });
+        couchModel.add(thisCouch);
+
+      }
+
+      couchModel.scale.set(0.04, 0.04, 0.04);
+      couchModel.rotation.y = Math.PI * 1.05;
+      couchModel.position.set(3, viewPlatform.scale.y / 2, 2.5);
+      viewPort.add(couchModel);
+
+      couchUI.add(couchModel.position, 'x', -10, 10, 0.1).name("couch X");
+      couchUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Y");
+      couchUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
+    }
+  );
+
+
+  // adjust view port
   viewPort.position.set(
     - platform.scale.x / 2 + viewPlatform.scale.x / 2,
     0,
@@ -544,8 +584,8 @@ function makePools() {
   //swimmingPool.position.set(1247, 951, 263);
   scene.add(swimmingPool);
 
-  gui.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
-  gui.add(swimmingPool.position, 'y', 0, 1000, 1).name('poolY');
-  gui.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
+  sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
+  sceneUI.add(swimmingPool.position, 'y', 0, 1000, 1).name('poolY');
+  sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
 
 }
