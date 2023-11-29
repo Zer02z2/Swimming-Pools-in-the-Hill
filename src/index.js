@@ -21,7 +21,7 @@ let cameraChoice = 1;
 let app;
 let camera, controls, scene, renderer, stats;
 let texture, mesh;
-let swimmingPool1, swimmingPool2, swimmingPool3, swimmingPool4;
+
 const worldWidth = 256, worldDepth = 256;
 const clock = new THREE.Clock();
 
@@ -402,6 +402,14 @@ function updateControls() {
     direction.x = Number(moveRight) - Number(moveLeft);
     direction.normalize(); // this ensures consistent movements in all directions
 
+    if (direction.y != 0 && direction.z != 0) {
+
+      console.log(lookAtVector.y, lookAtVector.z);
+      console.log(direction.y, direction.z);
+      console.log('----------------------------');
+
+    }
+
     if (moveForward || moveBackward || moveUpward) {
 
       velocity.z -= direction.z * 4000.0 * delta;
@@ -539,6 +547,7 @@ function makePools() {
 
     '/models/couch/couch.glb',
     (couch) => {
+
       let couchModel = new THREE.Group();
       while (couch.scene.children.length > 0) {
 
@@ -561,6 +570,32 @@ function makePools() {
       couchUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
     }
   );
+
+  // import plant
+  gltfLoader.load(
+
+    '/models/plant_pot/pedilanthus_plant.glb',
+    (plant) => {
+      
+      let plantModel = new THREE.Group();
+      while (plant.scene.children.length > 0) {
+
+        let thisPlant = plant.scene.children[0];
+        thisPlant.material = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          gradientMap: fiveTone
+        });
+        plantModel.add(thisPlant);
+
+      }
+
+      console.log(plantModel);
+      plantModel.scale.set(1, 1, 1);
+      plantModel.position.set(-5, viewPlatform.scale.y / 2, -3);
+      viewPort.add(plantModel);
+    }
+
+  )
 
 
   // adjust view port
