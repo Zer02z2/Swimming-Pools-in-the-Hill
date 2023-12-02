@@ -17,7 +17,7 @@ const armchariUI = gui.addFolder("Arm chair");
 const couchUI = gui.addFolder("Couch");
 
 // variables
-let cameraChoice = 1;
+let cameraChoice = 2;
 let app;
 let camera, controls, scene, renderer, stats;
 let texture, mesh;
@@ -397,18 +397,10 @@ function updateControls() {
 
     velocity.y -= velocity.y * 10.0 * delta; // 100.0 = mass
 
-    direction.z = Math.abs(lookAtVector.z) * ((Number(moveForward) - Number(moveBackward)));
+    direction.z = (Number(moveForward) - Number(moveBackward));
     direction.y = - lookAtVector.y * ((Number(moveForward) - Number(moveBackward))) - Number(moveUpward) / 2;
     direction.x = Number(moveRight) - Number(moveLeft);
     direction.normalize(); // this ensures consistent movements in all directions
-
-    if (direction.y != 0 && direction.z != 0) {
-
-      console.log(lookAtVector.y, lookAtVector.z);
-      console.log(direction.y, direction.z);
-      console.log('----------------------------');
-
-    }
 
     if (moveForward || moveBackward || moveUpward) {
 
@@ -551,12 +543,13 @@ function makePools() {
       let couchModel = new THREE.Group();
       while (couch.scene.children.length > 0) {
 
-        let thisColor;
-        if (couch.scene.children.length > 7) thisColor = 'rgb(207, 170, 122)';
-        else thisColor = '#ffffff';
         let thisCouch = couch.scene.children[0];
+
         thisCouch.material = new THREE.MeshToonMaterial({
-          color: thisColor,
+          color: (() => {
+            if (couch.scene.children.length > 7) return 'rgb(207, 170, 122)';
+            else return '#ffffff';
+          })(),
           gradientMap: fiveTone
         });
         couchModel.add(thisCouch);
@@ -585,12 +578,15 @@ function makePools() {
       while (plant.scene.children.length > 0) {
 
         let thisPlant = plant.scene.children[0];
-        let thisColor;
-        if (plant.scene.children.length > 8) thisColor = 'rgb(13, 74, 31)';
-        else thisColor = '#ffffff';
 
         thisPlant.material = new THREE.MeshToonMaterial({
-          color: thisColor,
+          color: (() => {
+            if (plant.scene.children.length > 8) {
+              if (Math.random() < 0.7) return 'rgb(27, 56, 31)';
+              else return 'rgb(57, 92, 39)'
+            }
+            else return '#ffffff';
+          })(),
           gradientMap: fiveTone
         });
         plantModel.add(thisPlant);
