@@ -61,8 +61,8 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enable = true;
-  renderer.shadowMap.renderReverseSided = false;
+  //renderer.shadowMap.enable = true;
+  //renderer.shadowMap.renderReverseSided = false;
   app.appendChild(renderer.domElement);
 
   threeTone.minFilter = threeTone.magFilter =
@@ -170,8 +170,8 @@ function init() {
   //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
   mesh = new THREE.Mesh(geometry, texture);
 
-  mesh.receiveShadow = true;
-  mesh.castShadow = true;
+  //mesh.receiveShadow = true;
+  //mesh.castShadow = true;
   mesh.visible = false;
 
   scene.add(mesh);
@@ -443,7 +443,7 @@ function makePools() {
     color: '#ffffff',
   });
 
-  // platform
+  // platform - subtracting one geometry from another to create the pool
   let platform_P = new THREE.Mesh(baseGeometry);
   let platform_N = new THREE.Mesh(baseGeometry);
   platform_P.scale.set(48, 10, 15);
@@ -505,7 +505,7 @@ function makePools() {
   const viewPlatform = new THREE.Mesh(baseGeometry, baseMaterial);
   viewPlatform.scale.set(
     platform.scale.x / 3,
-    platform.scale.y - 2,
+    platform.scale.y - 1,
     platform.scale.z / 1.5
   );
 
@@ -551,9 +551,12 @@ function makePools() {
       let couchModel = new THREE.Group();
       while (couch.scene.children.length > 0) {
 
+        let thisColor;
+        if (couch.scene.children.length > 7) thisColor = 'rgb(207, 170, 122)';
+        else thisColor = '#ffffff';
         let thisCouch = couch.scene.children[0];
         thisCouch.material = new THREE.MeshToonMaterial({
-          color: '#ffffff',
+          color: thisColor,
           gradientMap: fiveTone
         });
         couchModel.add(thisCouch);
@@ -576,13 +579,18 @@ function makePools() {
 
     '/models/plant_pot/pedilanthus_plant.glb',
     (plant) => {
-      
+
       let plantModel = new THREE.Group();
+
       while (plant.scene.children.length > 0) {
 
         let thisPlant = plant.scene.children[0];
+        let thisColor;
+        if (plant.scene.children.length > 8) thisColor = 'rgb(13, 74, 31)';
+        else thisColor = '#ffffff';
+
         thisPlant.material = new THREE.MeshToonMaterial({
-          color: '#ffffff',
+          color: thisColor,
           gradientMap: fiveTone
         });
         plantModel.add(thisPlant);
@@ -601,7 +609,7 @@ function makePools() {
   // adjust view port
   viewPort.position.set(
     - platform.scale.x / 2 + viewPlatform.scale.x / 2,
-    0,
+    - platform.scale.y / 2 + viewPlatform.scale.y / 2,
     - platform.scale.z / 2 - viewPlatform.scale.z / 2
   );
 
