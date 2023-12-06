@@ -15,9 +15,10 @@ const gui = new GUI();
 const sceneUI = gui.addFolder("Scene");
 const armchariUI = gui.addFolder("Arm chair");
 const couchUI = gui.addFolder("Couch");
+const tableUI = gui.addFolder("Table");
 
 // variables
-let cameraChoice = 2;
+let cameraChoice = 1;
 let app;
 let camera, controls, scene, renderer, stats;
 let texture, mesh;
@@ -49,9 +50,7 @@ makePools();
 animate();
 
 
-
-//---------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------
+//-------------------------------------------------- Init ----------------------------------------------
 
 function init() {
   // app
@@ -80,8 +79,8 @@ function init() {
     1,
     20000
   );
-  camera.position.set(200, 200, 200);
-  camera.lookAt(0, 0, 0);
+  camera.position.set(- 300, 150, - 300);
+  camera.lookAt(- 200, 100, - 200);
 
   // axis helper -> X: red, Y: green, Z: blue
   const axesHelper = new THREE.AxesHelper(500);
@@ -185,8 +184,8 @@ function init() {
 }
 
 
-//--------------------------------------------------------------------------
-//--------------------------------------------------------------------------
+
+//------------------------------------------ Perlin Noise ----------------------------------------------
 
 
 function generateHeight(width, height) {
@@ -221,7 +220,7 @@ function generateHeight(width, height) {
 
 }
 
-//--------------------------------------------------------------------------------
+//---------------------------------------- Pointer Lock Control --------------------------------------------
 
 function createControls() {
 
@@ -348,36 +347,6 @@ function createControls() {
 
 }
 
-//--------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------
-
-
-// animate
-function animate() {
-
-  requestAnimationFrame(animate);
-
-  const blocker = document.getElementById('blocker');
-  const instructions = document.getElementById('instructions');
-
-  if (cameraChoice == 1) {
-
-    instructions.style.display = 'none';
-    blocker.style.display = 'none';
-
-  }
-
-  if (cameraChoice == 2) updateControls();
-
-  renderer.render(scene, camera);
-
-  stats.update();
-
-};
-
-//-----------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------
-
 function updateControls() {
 
   const time = performance.now();
@@ -422,6 +391,36 @@ function updateControls() {
   prevTime = time;
 
 }
+
+//--------------------------------------------- Animate --------------------------------------------
+
+
+// animate
+function animate() {
+
+  requestAnimationFrame(animate);
+
+  const blocker = document.getElementById('blocker');
+  const instructions = document.getElementById('instructions');
+
+  if (cameraChoice == 1) {
+
+    instructions.style.display = 'none';
+    blocker.style.display = 'none';
+
+  }
+
+  if (cameraChoice == 2) updateControls();
+
+  renderer.render(scene, camera);
+
+  stats.update();
+
+};
+
+
+
+// --------------------------------------- Swimming Pool ----------------------------------------------
 
 function makePools() {
 
@@ -506,29 +505,32 @@ function makePools() {
   // import armchair
   gltfLoader.load(
 
-    '/models/armchair/armchair.glb',
+    '/models/armchair/SofaDesign.glb',
     (chair) => {
 
       let chairModel = new THREE.Group();
+
       while (chair.scene.children.length > 0) {
 
         let thisChair = chair.scene.children[0];
         thisChair.material = new THREE.MeshToonMaterial({
-          color: '#ffffff',
-          gradientMap: fiveTone
+          color: (() => {
+            if (chair.scene.children.length > 4) return 'rgb(207, 170, 122)';
+            else return '#ffffff';
+          })(),
+          gradientMap: fourTone
         });
-
         chairModel.add(thisChair);
 
       }
 
-      chairModel.scale.set(0.05, 0.05, 0.05);
+      chairModel.scale.set(2, 2, 2);
       chairModel.rotation.y = Math.PI / 3;
       chairModel.position.set(-4, viewPlatform.scale.y / 2, 2);
       viewPort.add(chairModel);
 
       armchariUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
-      armchariUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Y");
+      armchariUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
       armchariUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
 
     }
@@ -562,8 +564,38 @@ function makePools() {
       viewPort.add(couchModel);
 
       couchUI.add(couchModel.position, 'x', -10, 10, 0.1).name("couch X");
-      couchUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Y");
+      couchUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Z");
       couchUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
+    }
+  );
+
+  // import table
+  gltfLoader.load(
+
+    '/models/table/table.glb',
+    (table) => {
+
+      let tableModel = new THREE.Group();
+      while (table.scene.children.length > 0) {
+
+        let tableComponent = table.scene.children[0];
+
+        tableComponent.material = new THREE.MeshToonMaterial({
+          color:'#ffffff',
+          gradientMap: fiveTone
+        });
+        tableModel.add(tableComponent);
+
+      }
+
+      tableModel.scale.set(4, 4, 4);
+      tableModel.rotation.y = Math.PI * 1.05;
+      tableModel.position.set(3.1, viewPlatform.scale.y / 2, - 2.8);
+      viewPort.add(tableModel);
+
+      tableUI.add(tableModel.position, 'x', -10, 10, 0.1).name("table X");
+      tableUI.add(tableModel.position, 'z', -10, 10, 0.1).name("table Z");
+      tableUI.add(tableModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("table rotation");
     }
   );
 
@@ -582,8 +614,8 @@ function makePools() {
         thisPlant.material = new THREE.MeshToonMaterial({
           color: (() => {
             if (plant.scene.children.length > 8) {
-              if (Math.random() < 0.7) return 'rgb(27, 56, 31)';
-              else return 'rgb(57, 92, 39)'
+              if (Math.random() < 0.8) return 'rgb(27, 56, 31)';
+              else return 'rgb(20, 61, 36)'
             }
             else return '#ffffff';
           })(),
@@ -593,7 +625,6 @@ function makePools() {
 
       }
 
-      console.log(plantModel);
       plantModel.scale.set(1, 1, 1);
       plantModel.position.set(-5, viewPlatform.scale.y / 2, -3);
       viewPort.add(plantModel);
