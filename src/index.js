@@ -523,6 +523,7 @@ function makePools() {
         chairModel.add(thisChair);
 
       }
+      console.log(chairModel);
 
       chairModel.scale.set(2, 2, 2);
       chairModel.rotation.y = Math.PI / 3;
@@ -628,6 +629,35 @@ function makePools() {
       plantModel.scale.set(1, 1, 1);
       plantModel.position.set(-5, viewPlatform.scale.y / 2, -3);
       viewPort.add(plantModel);
+    }
+
+  )
+
+  // import closed umbrella
+  gltfLoader.load(
+
+    '/models/umbrella/closed.glb',
+    (umbrella) => {
+
+      let umbrellaModel = new THREE.Group();
+
+      while (umbrella.scene.children.length > 0) {
+
+        let umbrellaComponent = umbrella.scene.children[0];
+
+        umbrellaComponent.material = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          gradientMap: fiveTone
+        });
+        umbrellaModel.add(umbrellaComponent);
+
+      }
+
+      console.log(umbrellaModel);
+
+      umbrellaModel.scale.set(10, 10, 10);
+      umbrellaModel.position.set(-5, waterPool.scale.y / 2, -3);
+      waterPool.add(umbrellaModel);
     }
 
   )
