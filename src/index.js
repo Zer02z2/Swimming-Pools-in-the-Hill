@@ -98,14 +98,27 @@ function init() {
 
   // directional light
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(- 60, 100, 40);
+  dirLight.position.set(0, 1000, 0);
   dirLight.castShadow = true;
-  scene.add(dirLight);
 
   dirLight.shadow.mapSize.width = 512; // default
   dirLight.shadow.mapSize.height = 512; // default
-  dirLight.shadow.camera.near = 0.5; // default
+  dirLight.shadow.camera.near = 0.1; // default
   dirLight.shadow.camera.far = 500; // default
+  // dirLight.shadow.camera.left = 1000; // default
+  // dirLight.shadow.camera.right = - 1000; // default
+  // dirLight.shadow.camera.top = - 1000; // default
+  // dirLight.shadow.camera.bottom = 1000; // default
+  // dirLight.shadow.bias = 0.000001; 
+
+  scene.add(dirLight);
+
+  const dirHelper = new THREE.DirectionalLightHelper(dirLight, 50);
+  scene.add(dirHelper);
+
+
+  const helper = new THREE.CameraHelper(dirLight.shadow.camera);
+  scene.add(helper);
 
   if (cameraChoice == 1) {
 
@@ -174,8 +187,6 @@ function init() {
   //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
   mesh = new THREE.Mesh(geometry, texture);
 
-  //mesh.receiveShadow = true;
-  //mesh.castShadow = true;
   mesh.visible = false;
 
   scene.add(mesh);
@@ -459,6 +470,7 @@ function makePools() {
   platform.receiveShadow = true;
 
 
+
   swimmingPool.add(platform);
 
   // the pool itself
@@ -687,10 +699,6 @@ function makePools() {
 
       }
 
-      chairModel.traverse((node) => {
-
-        if (node.isMesh) node.castShadow = true;
-      })
       chairModel.scale.set(2, 2, 2);
       let chairModel2 = chairModel.clone();
       chairModel.position.set(17, platform.scale.y / 2, 1.6);
