@@ -13,9 +13,8 @@ import { GUI } from "lil-gui";
 // Debug
 const gui = new GUI();
 const sceneUI = gui.addFolder("Scene");
-const armchariUI = gui.addFolder("Arm chair");
-const couchUI = gui.addFolder("Couch");
-const tableUI = gui.addFolder("Table");
+const poolUI = gui.addFolder("Swimming Pool");
+const viewPortUI = gui.addFolder("Viewport");
 
 // variables
 let cameraChoice = 1;
@@ -530,9 +529,9 @@ function makePools() {
       chairModel.position.set(-4, viewPlatform.scale.y / 2, 2);
       viewPort.add(chairModel);
 
-      armchariUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
-      armchariUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
-      armchariUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
+      viewPortUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
+      viewPortUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
+      viewPortUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
 
     }
   );
@@ -564,9 +563,9 @@ function makePools() {
       couchModel.position.set(3, viewPlatform.scale.y / 2, 2.5);
       viewPort.add(couchModel);
 
-      couchUI.add(couchModel.position, 'x', -10, 10, 0.1).name("couch X");
-      couchUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Z");
-      couchUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
+      viewPortUI.add(couchModel.position, 'x', -10, 10, 0.1).name("couch X");
+      viewPortUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Z");
+      viewPortUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
     }
   );
 
@@ -594,9 +593,9 @@ function makePools() {
       tableModel.position.set(3.1, viewPlatform.scale.y / 2, - 2.8);
       viewPort.add(tableModel);
 
-      tableUI.add(tableModel.position, 'x', -10, 10, 0.1).name("table X");
-      tableUI.add(tableModel.position, 'z', -10, 10, 0.1).name("table Z");
-      tableUI.add(tableModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("table rotation");
+      viewPortUI.add(tableModel.position, 'x', -10, 10, 0.1).name("table X");
+      viewPortUI.add(tableModel.position, 'z', -10, 10, 0.1).name("table Z");
+      viewPortUI.add(tableModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("table rotation");
     }
   );
 
@@ -655,9 +654,13 @@ function makePools() {
 
       console.log(umbrellaModel);
 
-      umbrellaModel.scale.set(10, 10, 10);
-      umbrellaModel.position.set(-5, waterPool.scale.y / 2, -3);
+      umbrellaModel.scale.set(3, 3, 3);
+      umbrellaModel.position.set(20.5, waterPool.scale.y / 2, 1.6);
+      umbrellaModel.rotateY(90);
       waterPool.add(umbrellaModel);
+
+      poolUI.add(umbrellaModel.position, 'x', -50, 50, 0.1).name("umbrella X");
+      poolUI.add(umbrellaModel.position, 'z', -10, 10, 0.1).name("umbrella Z");
     }
 
   )
