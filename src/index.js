@@ -638,7 +638,7 @@ function makePools() {
 
     '/models/umbrella/closed.glb',
     (umbrella) => {
-
+      console.log(umbrella);
       let umbrellaModel = new THREE.Group();
 
       while (umbrella.scene.children.length > 0) {
