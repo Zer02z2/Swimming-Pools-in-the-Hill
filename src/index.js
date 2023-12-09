@@ -26,9 +26,9 @@ const worldWidth = 256, worldDepth = 256;
 const clock = new THREE.Clock();
 
 const gltfLoader = new GLTFLoader();
-const threeTone = new THREE.TextureLoader().load("/gradientMap/threeTone.jpg")
-const fourTone = new THREE.TextureLoader().load("/gradientMap/fourTone.jpg")
-const fiveTone = new THREE.TextureLoader().load("/gradientMap/fiveTone.jpg")
+const threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg")
+const fourTone = new THREE.TextureLoader().load("./gradientMap/fourTone.jpg")
+const fiveTone = new THREE.TextureLoader().load("./gradientMap/fiveTone.jpg")
 
 // pointer lock controls
 let moveForward = false;
@@ -504,7 +504,7 @@ function makePools() {
   // import armchair
   gltfLoader.load(
 
-    '/models/armchair/SofaDesign.glb',
+    './models/armchair/SofaDesign.glb',
     (chair) => {
 
       let chairModel = new THREE.Group();
@@ -539,7 +539,7 @@ function makePools() {
   // import couch
   gltfLoader.load(
 
-    '/models/couch/couch.glb',
+    './models/couch/couch.glb',
     (couch) => {
 
       let couchModel = new THREE.Group();
@@ -572,7 +572,7 @@ function makePools() {
   // import table
   gltfLoader.load(
 
-    '/models/table/table.glb',
+    './models/table/table.glb',
     (table) => {
 
       let tableModel = new THREE.Group();
@@ -602,7 +602,7 @@ function makePools() {
   // import plant
   gltfLoader.load(
 
-    '/models/plant_pot/pedilanthus_plant.glb',
+    './models/plant_pot/pedilanthus_plant.glb',
     (plant) => {
 
       let plantModel = new THREE.Group();
@@ -629,13 +629,75 @@ function makePools() {
       plantModel.position.set(-5, viewPlatform.scale.y / 2, -3);
       viewPort.add(plantModel);
     }
+  )
 
+  // import opened umbrella
+  gltfLoader.load(
+
+    './models/umbrella/opened.glb',
+    (umbrella) => {
+      console.log(umbrella);
+      let umbrellaModel = new THREE.Group();
+
+      while (umbrella.scene.children.length > 0) {
+
+        let umbrellaComponent = umbrella.scene.children[0];
+
+        umbrellaComponent.material = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          gradientMap: fiveTone
+        });
+        umbrellaModel.add(umbrellaComponent);
+
+      }
+
+      console.log(umbrellaModel);
+
+      umbrellaModel.scale.set(0.03, 0.03, 0.03);
+      umbrellaModel.position.set(-1.1, viewPlatform.scale.y / 2, 3.4);
+      umbrellaModel.rotateY(90);
+      viewPort.add(umbrellaModel);
+
+      viewPortUI.add(umbrellaModel.position, 'x', -10, 10, 0.1).name("umbrella X");
+      viewPortUI.add(umbrellaModel.position, 'z', -5, 5, 0.1).name("umbrella Z");
+    }
+  )
+
+  // import pool chair
+  gltfLoader.load(
+
+    './models/armchair/poolChair.glb',
+    (chair) => {
+
+      let chairModel = new THREE.Group();
+
+      while (chair.scene.children.length > 0) {
+
+        let thisChair = chair.scene.children[0];
+        thisChair.material = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          gradientMap: fourTone
+        });
+        chairModel.add(thisChair);
+
+      }
+      console.log(chairModel);
+
+      chairModel.scale.set(2, 2, 2);
+      chairModel.position.set(-4, waterPool.scale.y / 2, 2);
+      waterPool.add(chairModel);
+
+      poolUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
+      poolUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
+      poolUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
+
+    }
   )
 
   // import closed umbrella
   gltfLoader.load(
 
-    '/models/umbrella/closed.glb',
+    './models/umbrella/closed.glb',
     (umbrella) => {
       console.log(umbrella);
       let umbrellaModel = new THREE.Group();
@@ -662,8 +724,11 @@ function makePools() {
       poolUI.add(umbrellaModel.position, 'x', -50, 50, 0.1).name("umbrella X");
       poolUI.add(umbrellaModel.position, 'z', -10, 10, 0.1).name("umbrella Z");
     }
-
   )
+
+
+
+
 
 
   // adjust view port
