@@ -59,8 +59,8 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  //renderer.shadowMap.enable = true;
-  //renderer.shadowMap.renderReverseSided = false;
+  renderer.shadowMap.enable = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   app.appendChild(renderer.domElement);
 
   threeTone.minFilter = threeTone.magFilter =
@@ -99,7 +99,13 @@ function init() {
   // directional light
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
   dirLight.position.set(- 60, 100, 40);
+  dirLight.castShadow = true;
   scene.add(dirLight);
+
+  dirLight.shadow.mapSize.width = 512; // default
+  dirLight.shadow.mapSize.height = 512; // default
+  dirLight.shadow.camera.near = 0.5; // default
+  dirLight.shadow.camera.far = 500; // default
 
   if (cameraChoice == 1) {
 
@@ -354,8 +360,6 @@ function updateControls() {
   lookAtVector.applyQuaternion(camera.quaternion);
   lookAtVector.normalize();
 
-  //console.log(lookAtVector);
-
   if (controls.isLocked === true) {
 
     const delta = (time - prevTime) / 1000;
@@ -430,7 +434,7 @@ function makePools() {
   // box
   const baseGeometry = new THREE.BoxGeometry(1, 1, 1);
   const baseMaterial = new THREE.MeshStandardMaterial({
-    color: '#ffffff',
+    color: 'rgb(240, 240, 240)',
   });
 
   // platform - subtracting one geometry from another to create the pool
@@ -452,6 +456,7 @@ function makePools() {
   let platformCSG = platformCSG_P.subtract(platformCSG_N);
 
   let platform = CSG.toMesh(platformCSG, platform_P.matrix, baseMaterial);
+  platform.receiveShadow = true;
 
 
   swimmingPool.add(platform);
@@ -499,6 +504,7 @@ function makePools() {
     platform.scale.z / 1.5
   );
 
+  viewPlatform.receiveShadow = true;
   viewPort.add(viewPlatform);
 
   // import armchair
@@ -522,7 +528,6 @@ function makePools() {
         chairModel.add(thisChair);
 
       }
-      console.log(chairModel);
 
       chairModel.scale.set(2, 2, 2);
       chairModel.rotation.y = Math.PI / 3;
@@ -579,9 +584,10 @@ function makePools() {
       while (table.scene.children.length > 0) {
 
         let tableComponent = table.scene.children[0];
+        if (tableComponent.isMesh) tableComponent.castShadow = true;
 
         tableComponent.material = new THREE.MeshToonMaterial({
-          color:'#ffffff',
+          color: '#ffffff',
           gradientMap: fiveTone
         });
         tableModel.add(tableComponent);
@@ -636,7 +642,7 @@ function makePools() {
 
     './models/umbrella/opened.glb',
     (umbrella) => {
-      console.log(umbrella);
+
       let umbrellaModel = new THREE.Group();
 
       while (umbrella.scene.children.length > 0) {
@@ -650,8 +656,6 @@ function makePools() {
         umbrellaModel.add(umbrellaComponent);
 
       }
-
-      console.log(umbrellaModel);
 
       umbrellaModel.scale.set(0.03, 0.03, 0.03);
       umbrellaModel.position.set(-1.1, viewPlatform.scale.y / 2, 3.4);
@@ -674,6 +678,7 @@ function makePools() {
       while (chair.scene.children.length > 0) {
 
         let thisChair = chair.scene.children[0];
+        if (thisChair.isMesh) thisChair.castShadow = true;
         thisChair.material = new THREE.MeshToonMaterial({
           color: '#ffffff',
           gradientMap: fourTone
@@ -681,13 +686,20 @@ function makePools() {
         chairModel.add(thisChair);
 
       }
-      console.log(chairModel);
 
+      chairModel.traverse((node) => {
+
+        if (node.isMesh) node.castShadow = true;
+      })
       chairModel.scale.set(2, 2, 2);
-      chairModel.position.set(-4, waterPool.scale.y / 2, 2);
-      waterPool.add(chairModel);
+      let chairModel2 = chairModel.clone();
+      chairModel.position.set(17, platform.scale.y / 2, 1.6);
+      chairModel2.position.set(17, platform.scale.y / 2, -3.1);
 
-      poolUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
+      swimmingPool.add(chairModel);
+      swimmingPool.add(chairModel2);
+
+      poolUI.add(chairModel.position, 'x', -20, 20, 0.1).name("chair X");
       poolUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
       poolUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
 
@@ -699,7 +711,7 @@ function makePools() {
 
     './models/umbrella/closed.glb',
     (umbrella) => {
-      console.log(umbrella);
+
       let umbrellaModel = new THREE.Group();
 
       while (umbrella.scene.children.length > 0) {
@@ -714,12 +726,10 @@ function makePools() {
 
       }
 
-      console.log(umbrellaModel);
-
       umbrellaModel.scale.set(3, 3, 3);
-      umbrellaModel.position.set(20.5, waterPool.scale.y / 2, 1.6);
+      umbrellaModel.position.set(19.3, platform.scale.y / 2, -0.8);
       umbrellaModel.rotateY(90);
-      waterPool.add(umbrellaModel);
+      swimmingPool.add(umbrellaModel);
 
       poolUI.add(umbrellaModel.position, 'x', -50, 50, 0.1).name("umbrella X");
       poolUI.add(umbrellaModel.position, 'z', -10, 10, 0.1).name("umbrella Z");
