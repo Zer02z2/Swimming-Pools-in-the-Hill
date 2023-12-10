@@ -48,9 +48,9 @@ const params = {
   fade: true,
   far: 2000,
   mode: 'practical',
-  intensity: 1,
+  intensity: 0.9,
   color: 0xffffff,
-  lightX: 6,
+  lightX: - 2,
   lightY: - 10,
   lightZ: 2,
   margin: 100,
@@ -119,24 +119,9 @@ function init() {
   scene.add(ambientLight);
 
   // directional light
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(-60, 100, -20);
-  // dirLight.castShadow = true;
-
-  // dirLight.shadow.mapSize.width = 5120; // default
-  // dirLight.shadow.mapSize.height = 5120; // default
-  // dirLight.shadow.camera.near = 700; // default
-  // dirLight.shadow.camera.far = 2000; // default
-  // dirLight.shadow.camera.left = -200; // default
-  // dirLight.shadow.camera.right = 200; // default
-  // dirLight.shadow.camera.top = 200; // default
-  // dirLight.shadow.camera.bottom = - 200; // default
-  // dirLight.shadow.bias = 0.000001; 
-
-  // const shadowHelper = new THREE.CameraHelper(dirLight.shadow.camera);
-  // scene.add(shadowHelper);
-
-  //scene.add(dirLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.1);
+  dirLight.position.set(0, 1, 0);
+  scene.add(dirLight);
   const helper = new THREE.DirectionalLightHelper(dirLight, 5);
   scene.add(helper);
 
@@ -145,7 +130,7 @@ function init() {
     cascades: 4,
     mode: params.mode,
     parent: scene,
-    shadowMapSize: 2048,
+    shadowMapSize: 10240,
     lightDirection: new THREE.Vector3(params.lightX, params.lightY, params.lightZ).normalize(),
     lightIntensity: params.intensity,
     lightColor: params.color,
@@ -488,7 +473,7 @@ function makePools() {
   // box
   const baseGeometry = new THREE.BoxGeometry(1, 1, 1);
   const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 'rgb(240, 240, 240)',
+    color: 'rgb(220, 220, 220)',
   });
   csm.setupMaterial(baseMaterial);
 
@@ -518,7 +503,7 @@ function makePools() {
 
   // the pool itself
   const waterMaterial = new THREE.MeshStandardMaterial({
-    color: '#005eff',
+    color: '#0034cf',
     metalness: 0.8
   });
   csm.setupMaterial(waterMaterial);
@@ -580,6 +565,7 @@ function makePools() {
         let chairComponent = chair.scene.children[0];
 
         if (chairComponent.isMesh) chairComponent.castShadow = true;
+        if (chairComponent.isMesh) chairComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: (() => {
@@ -617,6 +603,7 @@ function makePools() {
         let couchComponent = couch.scene.children[0];
 
         if (couchComponent.isMesh) couchComponent.castShadow = true;
+        if (couchComponent.isMesh) couchComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: (() => {
@@ -653,6 +640,7 @@ function makePools() {
         let tableComponent = table.scene.children[0];
 
         if (tableComponent.isMesh) tableComponent.castShadow = true;
+        if (tableComponent.isMesh) tableComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: '#ffffff',
@@ -688,6 +676,7 @@ function makePools() {
         let plantComponent = plant.scene.children[0];
 
         if (plantComponent.isMesh) plantComponent.castShadow = true;
+        if (plantComponent.isMesh) plantComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: (() => {
@@ -724,6 +713,7 @@ function makePools() {
         let umbrellaComponent = umbrella.scene.children[0];
 
         if (umbrellaComponent.isMesh) umbrellaComponent.castShadow = true;
+        if (umbrellaComponent.isMesh) umbrellaComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: '#ffffff',
@@ -757,6 +747,7 @@ function makePools() {
         let chairComponent = chair.scene.children[0];
 
         if (chairComponent.isMesh) chairComponent.castShadow = true;
+        if (chairComponent.isMesh) chairComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: '#ffffff',
@@ -770,8 +761,8 @@ function makePools() {
 
       chairModel.scale.set(2, 2, 2);
       let chairModel2 = chairModel.clone();
-      chairModel.position.set(17, platform.scale.y / 2, 1.6);
-      chairModel2.position.set(17, platform.scale.y / 2, -3.1);
+      chairModel.position.set(19, platform.scale.y / 2, 1.6);
+      chairModel2.position.set(19, platform.scale.y / 2, -3.1);
 
       swimmingPool.add(chairModel);
       swimmingPool.add(chairModel2);
@@ -796,6 +787,7 @@ function makePools() {
         let umbrellaComponent = umbrella.scene.children[0];
 
         if (umbrellaComponent.isMesh) umbrellaComponent.castShadow = true;
+        if (umbrellaComponent.isMesh) umbrellaComponent.receiveShadow = true;
 
         let newMaterial = new THREE.MeshToonMaterial({
           color: '#ffffff',
@@ -808,7 +800,7 @@ function makePools() {
       }
 
       umbrellaModel.scale.set(3, 3, 3);
-      umbrellaModel.position.set(19.3, platform.scale.y / 2, -0.8);
+      umbrellaModel.position.set(20.5, platform.scale.y / 2, -0.8);
       umbrellaModel.rotateY(90);
       swimmingPool.add(umbrellaModel);
 
