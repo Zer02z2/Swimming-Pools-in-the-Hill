@@ -59,7 +59,7 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enable = true;
+  renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   app.appendChild(renderer.domElement);
 
@@ -98,27 +98,27 @@ function init() {
 
   // directional light
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(0, 1000, 0);
+  dirLight.position.set(-600, 1000, -200);
   dirLight.castShadow = true;
 
-  dirLight.shadow.mapSize.width = 512; // default
-  dirLight.shadow.mapSize.height = 512; // default
-  dirLight.shadow.camera.near = 0.1; // default
-  dirLight.shadow.camera.far = 500; // default
-  // dirLight.shadow.camera.left = 1000; // default
-  // dirLight.shadow.camera.right = - 1000; // default
-  // dirLight.shadow.camera.top = - 1000; // default
-  // dirLight.shadow.camera.bottom = 1000; // default
-  // dirLight.shadow.bias = 0.000001; 
+  dirLight.shadow.mapSize.width = 5120; // default
+  dirLight.shadow.mapSize.height = 5120; // default
+  dirLight.shadow.camera.near = 700; // default
+  dirLight.shadow.camera.far = 2000; // default
+  dirLight.shadow.camera.left = -200; // default
+  dirLight.shadow.camera.right = 200; // default
+  dirLight.shadow.camera.top = 200; // default
+  dirLight.shadow.camera.bottom = - 200; // default
+  dirLight.shadow.bias = 0.000001; 
 
   scene.add(dirLight);
 
-  const dirHelper = new THREE.DirectionalLightHelper(dirLight, 50);
+  const dirHelper = new THREE.DirectionalLightHelper(dirLight, 10);
   scene.add(dirHelper);
 
 
-  const helper = new THREE.CameraHelper(dirLight.shadow.camera);
-  scene.add(helper);
+  const shadowHelper = new THREE.CameraHelper(dirLight.shadow.camera);
+  scene.add(shadowHelper);
 
   if (cameraChoice == 1) {
 
@@ -291,7 +291,6 @@ function createControls() {
       case 'Space':
         moveUpward = true;
         break;
-
     }
 
   };
