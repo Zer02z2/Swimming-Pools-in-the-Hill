@@ -6,11 +6,10 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import Stats from 'three/addons/libs/stats.module.js';
-//import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import { gsap } from "gsap";
 import { GUI } from "lil-gui";
 import { CSM } from 'three/addons/csm/CSM.js';
 import { CSMHelper } from 'three/addons/csm/CSMHelper.js';
+import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
 
 // Debug
 const gui = new GUI();
@@ -21,11 +20,11 @@ const viewPortUI = gui.addFolder("Viewport");
 // variables
 let cameraChoice = 2;
 let app;
-let camera, controls, scene, renderer, stats, csm, csmHelper;
+let camera, controls, scene, renderer, stats, csm, csmHelper, mixer;
 let texture, mesh;
+const clock = new THREE.Clock();
 
 const worldWidth = 256, worldDepth = 256;
-const clock = new THREE.Clock();
 
 const gltfLoader = new GLTFLoader();
 const threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg")
@@ -64,10 +63,31 @@ const params = {
   }
 };
 
+// water
+// Texture width for simulation
+const WIDTH = 128;
+
+// Water size in system units
+const BOUNDSX = 16;
+const BOUNDSY = 8;
+
+let waterMesh;
+let gpuCompute;
+let heightmapVariable;
+let waterUniforms;
+let readWaterLevelShader;
+ let readWaterLevelRenderTarget;
+ let readWaterLevelImage;
+ const waterNormal = new THREE.Vector3();
+
+// const simplex = new SimplexNoise();
+
+let waterX, waterZ;
+waterX = waterZ = 0;
+
 
 
 init();
-makePools();
 animate();
 
 
@@ -100,7 +120,7 @@ function init() {
     1,
     20000
   );
-  camera.position.set(- 300, 150, - 300);
+  camera.position.set(200, 150, 200);
   camera.lookAt(- 200, 100, - 200);
 
   // axis helper -> X: red, Y: green, Z: blue
@@ -125,6 +145,8 @@ function init() {
   const helper = new THREE.DirectionalLightHelper(dirLight, 5);
   scene.add(helper);
 
+
+  // CSM
   csm = new CSM({
     maxFar: params.far,
     cascades: 4,
@@ -160,6 +182,9 @@ function init() {
 
   }
 
+  // make swimming pool
+  makePools();
+
   // resize
   const onResize = () => {
 
@@ -172,7 +197,7 @@ function init() {
 
   window.addEventListener("resize", onResize);
 
-  // trying out new stuffs from here
+  // generate mountains
   const data = generateHeight(worldWidth, worldDepth);
 
   let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
@@ -434,6 +459,9 @@ function animate() {
 
   requestAnimationFrame(animate);
 
+  // Update mixer
+  if (mixer != null) mixer.update(clock.getDelta());
+
   const blocker = document.getElementById('blocker');
   const instructions = document.getElementById('instructions');
 
@@ -454,12 +482,132 @@ function animate() {
 
   }
 
-  renderer.render(scene, camera);
+  render();
 
   stats.update();
 
 };
 
+function render() {
+
+  // Set uniforms: mouse interaction
+  const uniforms = heightmapVariable.material.uniforms;
+
+  let x = Math.cos(waterX);
+  let z = Math.sin(waterZ);
+  uniforms['pos'].value.set(x * 2, z * 2);
+  waterX += 0.05;
+  waterZ += 0.05;
+
+  // Do the gpu computation
+  gpuCompute.compute();
+
+  // Get compute output in custom uniform
+  waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
+
+  // Render
+  renderer.render(scene, camera);
+}
+
+
+// ----------------------------------------- water ---------------------------------------------------
+
+function initWater(waterPool) {
+
+  const materialColor = '#031745';
+
+  const geometry = new THREE.PlaneGeometry(BOUNDSX, BOUNDSY, WIDTH - 1, WIDTH - 1);
+
+  // material: make a THREE.ShaderMaterial clone of THREE.MeshPhongMaterial, with customized vertex shader
+  const material = new THREE.ShaderMaterial({
+    uniforms: THREE.UniformsUtils.merge([
+      THREE.ShaderLib['phong'].uniforms,
+      {
+        'heightmap': { value: null }
+      }
+    ]),
+    vertexShader: document.getElementById('waterVertexShader').textContent,
+    fragmentShader: THREE.ShaderChunk['meshphong_frag']
+
+  });
+
+  material.lights = true;
+
+  // Material attributes from THREE.MeshPhongMaterial
+  // Sets the uniforms with the material values
+  material.uniforms['diffuse'].value = new THREE.Color(materialColor);
+  material.uniforms['specular'].value = new THREE.Color(0x111111);
+  material.uniforms['shininess'].value = Math.max(50, 1e-4);
+  material.uniforms['opacity'].value = material.opacity;
+
+  // Defines
+  material.defines.WIDTH = WIDTH.toFixed(1);
+  material.defines.BOUNDSX = BOUNDSX.toFixed(1);
+  material.defines.BOUNDSY = BOUNDSY.toFixed(1);
+
+  waterUniforms = material.uniforms;
+
+  waterMesh = new THREE.Mesh(geometry, material);
+  waterMesh.rotation.x = - Math.PI / 2;
+  waterMesh.matrixAutoUpdate = false;
+  waterMesh.position.set(0, 0.5, 0);
+  waterMesh.updateMatrix();
+
+  waterPool.add(waterMesh);
+
+  // Creates the gpu computation class and sets it up
+
+  gpuCompute = new GPUComputationRenderer(WIDTH, WIDTH, renderer);
+
+  if (renderer.capabilities.isWebGL2 === false) {
+
+    gpuCompute.setDataType(THREE.HalfFloatType);
+
+  }
+
+  const heightmap0 = gpuCompute.createTexture();
+
+  heightmapVariable = gpuCompute.addVariable('heightmap', document.getElementById('heightmapFragmentShader').textContent, heightmap0);
+
+  gpuCompute.setVariableDependencies(heightmapVariable, [heightmapVariable]);
+
+  heightmapVariable.material.uniforms['pos'] = { value: new THREE.Vector2(0, 0) };
+  heightmapVariable.material.uniforms['size'] = { value: 1.0 };
+  heightmapVariable.material.uniforms['viscosityConstant'] = { value: 0.98 };
+  heightmapVariable.material.uniforms['heightCompensation'] = { value: 0 };
+  heightmapVariable.material.defines.BOUNDSX = BOUNDSX.toFixed(1);
+  heightmapVariable.material.defines.BOUNDSY = BOUNDSY.toFixed(1);
+
+  const error = gpuCompute.init();
+  if (error !== null) {
+
+    console.error(error);
+
+  }
+
+  // Create compute shader to read water level
+  readWaterLevelShader = gpuCompute.createShaderMaterial(document.getElementById('readWaterLevelFragmentShader').textContent, {
+    point1: { value: new THREE.Vector2() },
+    levelTexture: { value: null }
+  });
+  readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
+  readWaterLevelShader.defines.BOUNDSX = BOUNDSX.toFixed(1);
+  readWaterLevelShader.defines.BOUNDSY = BOUNDSY.toFixed(1);
+
+  // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
+  readWaterLevelImage = new Uint8Array(4 * 1 * 4);
+
+  readWaterLevelRenderTarget = new THREE.WebGLRenderTarget(4, 1, {
+    wrapS: THREE.ClampToEdgeWrapping,
+    wrapT: THREE.ClampToEdgeWrapping,
+    minFilter: THREE.NearestFilter,
+    magFilter: THREE.NearestFilter,
+    format: THREE.RGBAFormat,
+    type: THREE.UnsignedByteType,
+    depthBuffer: false
+  });
+
+}
 
 
 // --------------------------------------- Swimming Pool ----------------------------------------------
@@ -502,16 +650,14 @@ function makePools() {
   swimmingPool.add(platform);
 
   // the pool itself
-  const waterMaterial = new THREE.MeshStandardMaterial({
-    color: '#0034cf',
-    metalness: 0.8
-  });
-  csm.setupMaterial(waterMaterial);
+  const valuesChanger = () => {
 
-  const water = new THREE.Mesh(baseGeometry, waterMaterial);
-  water.scale.set(16, 1, 8);
-
-  waterPool.add(water);
+    heightmapVariable.material.uniforms['size'].value = 0.01;
+    heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
+  };
+  
+  initWater(waterPool);
+  valuesChanger();
 
   // padding
   const makeSide = (length, width, x, z) => {
@@ -528,15 +674,15 @@ function makePools() {
 
   }
 
-  makeSide(water.scale.x + 2, 1, 0, water.scale.z / 2 + 0.5);
-  makeSide(water.scale.x + 2, 1, 0, - water.scale.z / 2 - 0.5);
-  makeSide(1, water.scale.z + 2, water.scale.x / 2 + 0.5, 0);
-  makeSide(1, water.scale.z + 2, - water.scale.x / 2 - 0.5, 0);
+  makeSide(BOUNDSX + 2, 1, 0, BOUNDSY / 2 + 0.5);
+  makeSide(BOUNDSX + 2, 1, 0, - BOUNDSY / 2 - 0.5);
+  makeSide(1, BOUNDSY + 2, BOUNDSX / 2 + 0.5, 0);
+  makeSide(1, BOUNDSY + 2, - BOUNDSX / 2 - 0.5, 0);
 
   waterPool.position.set(
     1,
-    platform.scale.y / 2 - (water.scale.y / 2 - 0.1),
-    - platform.scale.z / 2 + water.scale.z / 2 + 2
+    platform.scale.y / 2 - 0.5,
+    - platform.scale.z / 2 + BOUNDSY / 2 + 2
   );
   swimmingPool.add(waterPool);
 
@@ -808,6 +954,43 @@ function makePools() {
       poolUI.add(umbrellaModel.position, 'z', -10, 10, 0.1).name("umbrella Z");
     }
   )
+
+  // import character
+  gltfLoader.load(
+
+    './models/character/boxMan.glb',
+    (character) => {
+
+      character.scene.traverse((node) => {
+
+        if (node.isMesh) node.castShadow = true;
+        if (node.isMesh) node.receiveShadow = true;
+
+        let newMaterial = new THREE.MeshToonMaterial({
+          color: '#ffffff',
+          gradientMap: fiveTone
+        });
+        csm.setupMaterial(newMaterial);
+        node.material = newMaterial;
+      })
+
+      mixer = new THREE.AnimationMixer(character.scene);
+      const action = mixer.clipAction(character.animations[4]);
+
+      action.play();
+
+      console.log(character);
+      
+      character.scene.scale.set(2, 2, 2);
+      character.scene.position.set(
+        - BOUNDSX / 2 - waterPool.position.x,
+        platform.scale.y / 2,
+        waterPool.position.z);
+        character.scene.rotateY(1.5);
+
+      swimmingPool.add(character.scene);
+    }
+  );
 
 
 
