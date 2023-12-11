@@ -197,7 +197,7 @@ function init() {
 
   window.addEventListener("resize", onResize);
 
-  // trying out new stuffs from here
+  // generate mountains
   const data = generateHeight(worldWidth, worldDepth);
 
   let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
@@ -493,8 +493,8 @@ function render() {
   let x = Math.cos(waterX);
   let z = Math.sin(waterZ);
   uniforms['pos'].value.set(x * 2, z * 2);
-  waterX += 0.1;
-  waterZ += 0.1;
+  waterX += 0.05;
+  waterZ += 0.05;
 
   // Do the gpu computation
   gpuCompute.compute();
@@ -583,8 +583,6 @@ function initWater(waterPool) {
 
   }
 
-  // Create compute shader to smooth the water surface and velocity
-
   // Create compute shader to read water level
   readWaterLevelShader = gpuCompute.createShaderMaterial(document.getElementById('readWaterLevelFragmentShader').textContent, {
     point1: { value: new THREE.Vector2() },
@@ -611,7 +609,7 @@ function initWater(waterPool) {
 
 function fillTexture(texture) {
 
-  const waterMaxHeight = 10;
+  const waterMaxHeight = 0;
 
   function noise(x, y) {
 
@@ -706,7 +704,7 @@ function makePools() {
 
   const valuesChanger = () => {
 
-    heightmapVariable.material.uniforms['size'].value = 2;
+    heightmapVariable.material.uniforms['size'].value = 0.01;
     heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
   };
   
