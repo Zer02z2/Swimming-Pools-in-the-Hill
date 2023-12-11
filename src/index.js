@@ -993,10 +993,6 @@ function makePools() {
   );
 
 
-
-
-
-
   // adjust view port
   viewPort.position.set(
     - platform.scale.x / 2 + viewPlatform.scale.x / 2,
@@ -1005,11 +1001,6 @@ function makePools() {
   );
 
   swimmingPool.add(viewPort);
-
-
-
-
-
 
 
 
