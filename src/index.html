@@ -126,8 +126,8 @@
 				float waterLevel = texture2D( levelTexture, point1 ).x;
 
 				vec2 normal = vec2(
-					( texture2D( levelTexture, point1 + vec2( - cellSize.x, 0 ) ).x - texture2D( levelTexture, point1 + vec2( cellSize.x, 0 ) ).x ) * WIDTH / BOUNDSX,
-					( texture2D( levelTexture, point1 + vec2( 0, - cellSize.y ) ).x - texture2D( levelTexture, point1 + vec2( 0, cellSize.y ) ).x ) * WIDTH / BOUNDSY );
+					( texture2D( levelTexture, point1 + vec2( - cellSize.x, 0 ) ).x - texture2D( levelTexture, point1 + vec2( cellSize.x, 0 ) ).x ) * WIDTHX / BOUNDSX,
+					( texture2D( levelTexture, point1 + vec2( 0, - cellSize.y ) ).x - texture2D( levelTexture, point1 + vec2( 0, cellSize.y ) ).x ) * WIDTHY / BOUNDSY );
 
 				if ( gl_FragCoord.x < 1.5 ) {
 
@@ -179,7 +179,7 @@
 
 			void main() {
 
-				vec2 cellSize = vec2( 1.0 / WIDTH, 1.0 / WIDTH );
+				vec2 cellSize = vec2( 1.0 / WIDTHX, 1.0 / WIDTHY );
 
 				#include <uv_vertex>
 				#include <color_vertex>
@@ -187,8 +187,8 @@
 				// # include <beginnormal_vertex>
 				// Compute normal from heightmap
 				vec3 objectNormal = vec3(
-					( texture2D( heightmap, uv + vec2( - cellSize.x, 0 ) ).x - texture2D( heightmap, uv + vec2( cellSize.x, 0 ) ).x ) * WIDTH / BOUNDSX,
-					( texture2D( heightmap, uv + vec2( 0, - cellSize.y ) ).x - texture2D( heightmap, uv + vec2( 0, cellSize.y ) ).x ) * WIDTH / BOUNDSY,
+					( texture2D( heightmap, uv + vec2( - cellSize.x, 0 ) ).x - texture2D( heightmap, uv + vec2( cellSize.x, 0 ) ).x ) * WIDTHX / BOUNDSX,
+					( texture2D( heightmap, uv + vec2( 0, - cellSize.y ) ).x - texture2D( heightmap, uv + vec2( 0, cellSize.y ) ).x ) * WIDTHY / BOUNDSY,
 					1.0 );
 				//<beginnormal_vertex>
 

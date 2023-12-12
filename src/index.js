@@ -65,7 +65,8 @@ const params = {
 
 // water
 // Texture width for simulation
-const WIDTH = 128;
+const WIDTHX = 128;
+const WIDTHY = 64;
 
 // Water size in system units
 const BOUNDSX = 16;
@@ -496,8 +497,8 @@ function render() {
   let x = Math.cos(waterX);
   let z = Math.sin(waterZ);
   uniforms['pos'].value.set(x * 2, z * 2);
-  waterX += 0.05;
-  waterZ += 0.05;
+  waterX += Math.random() * 1;
+  waterZ += Math.random() * 1;
 
   // Do the gpu computation
   gpuCompute.compute();
@@ -516,7 +517,7 @@ function initWater(waterPool) {
 
   const materialColor = '#031745';
 
-  const geometry = new THREE.PlaneGeometry(BOUNDSX, BOUNDSY, WIDTH - 1, WIDTH - 1);
+  const geometry = new THREE.PlaneGeometry(BOUNDSX, BOUNDSY, WIDTHX - 1, WIDTHY - 1);
 
   // material: make a THREE.ShaderMaterial clone of THREE.MeshPhongMaterial, with customized vertex shader
   const material = new THREE.ShaderMaterial({
@@ -541,7 +542,8 @@ function initWater(waterPool) {
   material.uniforms['opacity'].value = material.opacity;
 
   // Defines
-  material.defines.WIDTH = WIDTH.toFixed(1);
+  material.defines.WIDTHX = WIDTHX.toFixed(1);
+  material.defines.WIDTHY = WIDTHY.toFixed(1);
   material.defines.BOUNDSX = BOUNDSX.toFixed(1);
   material.defines.BOUNDSY = BOUNDSY.toFixed(1);
 
@@ -557,7 +559,7 @@ function initWater(waterPool) {
 
   // Creates the gpu computation class and sets it up
 
-  gpuCompute = new GPUComputationRenderer(WIDTH, WIDTH, renderer);
+  gpuCompute = new GPUComputationRenderer(WIDTHX, WIDTHY, renderer);
 
   if (renderer.capabilities.isWebGL2 === false) {
 
@@ -590,7 +592,8 @@ function initWater(waterPool) {
     point1: { value: new THREE.Vector2() },
     levelTexture: { value: null }
   });
-  readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
+  readWaterLevelShader.defines.WIDTHX = WIDTHX.toFixed(1);
+  readWaterLevelShader.defines.WIDTHY = WIDTHY.toFixed(1);
   readWaterLevelShader.defines.BOUNDSX = BOUNDSX.toFixed(1);
   readWaterLevelShader.defines.BOUNDSY = BOUNDSY.toFixed(1);
 
