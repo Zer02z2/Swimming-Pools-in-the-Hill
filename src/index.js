@@ -13,13 +13,18 @@ import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer
 import { gsap } from "gsap";
 
 // Debug
-const gui = new GUI();
-const sceneUI = gui.addFolder("Scene");
-const poolUI = gui.addFolder("Swimming Pool");
-const viewPortUI = gui.addFolder("Viewport");
+let debugging = false;
+let gui, sceneUI, poolUI, viewPortUI;
+if (debugging) {
+  gui = new GUI();
+  sceneUI = gui.addFolder("Scene");
+  poolUI = gui.addFolder("Swimming Pool");
+  viewPortUI = gui.addFolder("Viewport");
+}
+
 
 // variables
-let cameraChoice = 1;
+let cameraChoice = 2;
 let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
 let mixers = [];
@@ -117,7 +122,7 @@ function init() {
   // scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xefd1b5);
-  //scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
+  scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
 
   // perspective camera
   camera = new THREE.PerspectiveCamera(
@@ -132,9 +137,12 @@ function init() {
   // axis helper -> X: red, Y: green, Z: blue
   const axesHelper = new THREE.AxesHelper(500);
   axesHelper.position.y = 0.001; // above the ground slightly
-  scene.add(axesHelper);
-  sceneUI.add(axesHelper, 'visible').name('Axes Helper');
-  sceneUI.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
+  // scene.add(axesHelper);
+  if (debugging) {
+    sceneUI.add(axesHelper, 'visible').name('Axes Helper');
+    sceneUI.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
+  }
+
 
   // grid helper
   const gridHelper = new THREE.GridHelper(10000, 1000, "#444444", "#cccccc");
@@ -191,6 +199,10 @@ function init() {
   // make swimming pool
   makePools(1247, 950, 313, 0, true);
   makePools(1252, 1033, -3022, 2, false);
+  // makePools(235, 499, -580, 1.6, false);
+  makePools(-1699, 295, -2106, 3.2, false);
+  makePools(- 1903, 1211, -71, - 1.5, false);
+  makePools(1965, 677, 3593, 0.4, false);
 
   // resize
   const onResize = () => {
@@ -246,12 +258,14 @@ function init() {
 
   scene.add(mesh);
 
-  sceneUI.add(mesh, 'visible').name('Mesh Visibility');
-  sceneUI.add(mesh.material, 'wireframe').name('Wireframe');
+  if (debugging) {
+    sceneUI.add(mesh, 'visible').name('Mesh Visibility');
+    sceneUI.add(mesh.material, 'wireframe').name('Wireframe');
+  }
 
   // stats monitor
   stats = new Stats();
-  document.body.appendChild(stats.dom);
+  // document.body.appendChild(stats.dom);
 }
 
 
@@ -690,6 +704,17 @@ function makePools(x, y, z, r, w) {
   if (w == true){
     initWater(waterPool);
     valuesChanger();
+  } else {
+
+    const waterMaterial = new THREE.MeshStandardMaterial({
+      color: 'rgb(1, 34, 117)',
+      metalness: 0.8
+    });
+    const water = new THREE.Mesh(baseGeometry, waterMaterial);
+    water.scale.set(16, 1, 8);
+    water.position.set(0, 0.1, 0);
+    waterPool.add(water);
+
   }
 
 
@@ -764,10 +789,11 @@ function makePools(x, y, z, r, w) {
       chairModel.position.set(-4, viewPlatform.scale.y / 2, 2);
       viewPort.add(chairModel);
 
-      viewPortUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
-      viewPortUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
-      viewPortUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
-
+      if (debugging) {
+        viewPortUI.add(chairModel.position, 'x', -10, 10, 0.1).name("chair X");
+        viewPortUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
+        viewPortUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
+      }
     }
   );
 
@@ -802,9 +828,11 @@ function makePools(x, y, z, r, w) {
       couchModel.position.set(3, viewPlatform.scale.y / 2, 2.5);
       viewPort.add(couchModel);
 
-      viewPortUI.add(couchModel.position, 'x', -10, 10, 0.1).name("couch X");
-      viewPortUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Z");
-      viewPortUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
+      if (debugging) {
+        viewPortUI.add(couchModel.position, 'x', -10, 10, 0.1).name("couch X");
+        viewPortUI.add(couchModel.position, 'z', -10, 10, 0.1).name("couch Z");
+        viewPortUI.add(couchModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("couch rotation");
+      }
     }
   );
 
@@ -837,9 +865,11 @@ function makePools(x, y, z, r, w) {
       tableModel.position.set(3.1, viewPlatform.scale.y / 2, - 2.8);
       viewPort.add(tableModel);
 
-      viewPortUI.add(tableModel.position, 'x', -10, 10, 0.1).name("table X");
-      viewPortUI.add(tableModel.position, 'z', -10, 10, 0.1).name("table Z");
-      viewPortUI.add(tableModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("table rotation");
+      if (debugging) {
+        viewPortUI.add(tableModel.position, 'x', -10, 10, 0.1).name("table X");
+        viewPortUI.add(tableModel.position, 'z', -10, 10, 0.1).name("table Z");
+        viewPortUI.add(tableModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("table rotation");
+      }
     }
   );
 
@@ -909,8 +939,10 @@ function makePools(x, y, z, r, w) {
       umbrellaModel.rotateY(90);
       viewPort.add(umbrellaModel);
 
-      viewPortUI.add(umbrellaModel.position, 'x', -10, 10, 0.1).name("umbrella X");
-      viewPortUI.add(umbrellaModel.position, 'z', -5, 5, 0.1).name("umbrella Z");
+      if (debugging) {
+        viewPortUI.add(umbrellaModel.position, 'x', -10, 10, 0.1).name("umbrella X");
+        viewPortUI.add(umbrellaModel.position, 'z', -5, 5, 0.1).name("umbrella Z");
+      }
     }
   )
 
@@ -947,10 +979,11 @@ function makePools(x, y, z, r, w) {
       swimmingPool.add(chairModel);
       swimmingPool.add(chairModel2);
 
-      poolUI.add(chairModel.position, 'x', -20, 20, 0.1).name("chair X");
-      poolUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
-      poolUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
-
+      if (debugging) {
+        poolUI.add(chairModel.position, 'x', -20, 20, 0.1).name("chair X");
+        poolUI.add(chairModel.position, 'z', -10, 10, 0.1).name("chair Z");
+        poolUI.add(chairModel.rotation, 'y', 0, 2 * Math.PI, 0.1).name("chair rotation");
+      }
     }
   )
 
@@ -984,8 +1017,10 @@ function makePools(x, y, z, r, w) {
       umbrellaModel.rotateY(90);
       swimmingPool.add(umbrellaModel);
 
-      poolUI.add(umbrellaModel.position, 'x', -50, 50, 0.1).name("umbrella X");
-      poolUI.add(umbrellaModel.position, 'z', -10, 10, 0.1).name("umbrella Z");
+      if (debugging) {
+        poolUI.add(umbrellaModel.position, 'x', -50, 50, 0.1).name("umbrella X");
+        poolUI.add(umbrellaModel.position, 'z', -10, 10, 0.1).name("umbrella Z");
+      }
     }
   )
 
@@ -1040,7 +1075,7 @@ function makePools(x, y, z, r, w) {
             break;
 
           case 'dive':
-            console.log("diving");
+            // console.log("diving");
             diving = true;
             character.scene.position.set(
               - BOUNDSX / 2 - waterPool.position.x + 2.5,
@@ -1080,7 +1115,7 @@ function makePools(x, y, z, r, w) {
         }
       })
 
-      console.log(mixer._actions);
+      // console.log(mixer._actions);
       
       character.scene.scale.set(2, 2, 2);
       character.scene.position.set(
@@ -1112,8 +1147,10 @@ function makePools(x, y, z, r, w) {
   swimmingPool.rotateY(r);
   scene.add(swimmingPool);
 
-  sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
-  sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
-  sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
+  if (debugging) {
+    sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
+    sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
+    sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
+  }
 
 }
