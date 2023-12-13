@@ -6,10 +6,11 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import Stats from 'three/addons/libs/stats.module.js';
-import { GUI } from "lil-gui";
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { CSM } from 'three/addons/csm/CSM.js';
 import { CSMHelper } from 'three/addons/csm/CSMHelper.js';
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
+import { gsap } from "gsap";
 
 // Debug
 const gui = new GUI();
@@ -982,14 +983,20 @@ function makePools() {
       let mixer = new THREE.AnimationMixer(character.scene);
       mixers.push(mixer);
       const idleAction = mixer.clipAction(character.animations[4]);
+
       const diveAction = mixer.clipAction(character.animations[2]);
       diveAction.loop = THREE.LoopOnce;
+
       const climbAction = mixer.clipAction(character.animations[1]);
       climbAction.loop = THREE.LoopOnce;
+
       const standAction = mixer.clipAction(character.animations[5]);
       standAction.loop = THREE.LoopOnce;
+      standAction.clampWhenFinished = true;
+
       const turnAction = mixer.clipAction(character.animations[6]);
       turnAction.loop = THREE.LoopOnce;
+      turnAction.clampWhenFinished = true;
 
       // idleAction.play();
       mixer._actions[1].play();
@@ -998,23 +1005,43 @@ function makePools() {
 
         switch (m.action._clip.name) {
 
+          case 'idle2':
+            break;
+
           case 'dive':
+            character.scene.position.set(
+              - BOUNDSX / 2 - waterPool.position.x + 2.5,
+              platform.scale.y / 2 - 3,
+              waterPool.position.z);
+              character.scene.rotateY(3);
             climbAction.reset();
             climbAction.play();
+            climbAction.setEffectiveWeight(1);
             break;
 
           case 'climb':
+            character.scene.position.set(
+              - BOUNDSX / 2 - waterPool.position.x + 1,
+              platform.scale.y / 2,
+              waterPool.position.z);
             standAction.reset();
             standAction.play();
             break;
 
           case 'standUp':
+            gsap.to(character.scene.position, {
+              x: - BOUNDSX / 2 - waterPool.position.x,
+              duration: 1
+            });         
+            turnAction.crossFadeFrom(standAction, 0.5, true);
             turnAction.reset();
             turnAction.play();
             break;
 
           case 'turn':
+            character.scene.rotateY(1.5);
             idleAction.reset();
+            // idleAction.crossFadeFrom(turnAction, 0.5, true);
             idleAction.play();
         }
       })
