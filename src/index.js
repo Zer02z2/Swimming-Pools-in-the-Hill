@@ -24,6 +24,7 @@ let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
 let mixers = [];
 let characters = [];
+let diving, gettingUp, inIdle;
 let texture, mesh;
 const clock = new THREE.Clock();
 
@@ -497,11 +498,31 @@ function render() {
   // Set uniforms: mouse interaction
   const uniforms = heightmapVariable.material.uniforms;
 
-  let x = Math.cos(waterX);
-  let z = Math.sin(waterZ);
-  uniforms['pos'].value.set(x * 2, z * 2);
-  waterX += Math.random() * 1;
-  waterZ += Math.random() * 1;
+  if (characters[0]) {
+    let dist = camera.position.distanceTo(characters[0].getWorldPosition(new THREE.Vector3()));
+    if (dist < 200 && inIdle) {
+      mixers[0]._actions[1].reset();
+      mixers[0]._actions[1].play();
+      inIdle = false;
+    } else if (inIdle == false && dist > 200 && !gettingUp) {
+      mixers[0]._actions[2].reset();
+      mixers[0]._actions[2].play();
+      gettingUp = true;
+    }
+  } 
+
+  let x, z;
+  if (diving == true) {
+    x = -4;
+    z = 0;
+    diving = false
+  } else {
+    x = 10000;
+    z = 10000;
+  }
+
+  uniforms['pos'].value.set(x, z);
+
 
   // Do the gpu computation
   gpuCompute.compute();
@@ -658,7 +679,7 @@ function makePools() {
   // the pool itself
   const valuesChanger = () => {
 
-    heightmapVariable.material.uniforms['size'].value = 0.01;
+    heightmapVariable.material.uniforms['size'].value = 1;
     heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
   };
   
@@ -962,6 +983,7 @@ function makePools() {
   )
 
   // import character
+  diving = gettingUp = false;
   gltfLoader.load(
 
     './models/character/boxMan.glb',
@@ -999,7 +1021,9 @@ function makePools() {
       turnAction.clampWhenFinished = true;
 
       // idleAction.play();
-      mixer._actions[1].play();
+      mixer._actions[0].play();
+      inIdle = true;
+      gettingUp = false;
 
       mixer.addEventListener('finished', (m) => {
 
@@ -1009,14 +1033,15 @@ function makePools() {
             break;
 
           case 'dive':
+            console.log("diving");
+            diving = true;
             character.scene.position.set(
               - BOUNDSX / 2 - waterPool.position.x + 2.5,
               platform.scale.y / 2 - 3,
               waterPool.position.z);
               character.scene.rotateY(3);
-            climbAction.reset();
-            climbAction.play();
-            climbAction.setEffectiveWeight(1);
+            // climbAction.reset();
+            // climbAction.play();
             break;
 
           case 'climb':
@@ -1031,7 +1056,7 @@ function makePools() {
           case 'standUp':
             gsap.to(character.scene.position, {
               x: - BOUNDSX / 2 - waterPool.position.x,
-              duration: 1
+              duration: 1,
             });         
             turnAction.crossFadeFrom(standAction, 0.5, true);
             turnAction.reset();
@@ -1043,6 +1068,8 @@ function makePools() {
             idleAction.reset();
             // idleAction.crossFadeFrom(turnAction, 0.5, true);
             idleAction.play();
+            inIdle = true;
+            gettingUp = false;
         }
       })
 
@@ -1056,6 +1083,7 @@ function makePools() {
         character.scene.rotateY(1.5);
 
       swimmingPool.add(character.scene);
+      characters.push(character.scene);
     }
   );
 
