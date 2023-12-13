@@ -13,7 +13,7 @@ import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer
 import { gsap } from "gsap";
 
 // Debug
-let debugging = false;
+let debugging = true;
 let gui, sceneUI, poolUI, viewPortUI;
 if (debugging) {
   gui = new GUI();
@@ -49,6 +49,7 @@ let moveUpward = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
+let moveSpeed = 1000;
 
 // CSM param
 const params = {
@@ -197,7 +198,7 @@ function init() {
   }
 
   // make swimming pool
-  makePools(1247, 950, 313, 0, true);
+  makePools(1247, 950, 346, 0, true);
   makePools(1252, 1033, -3022, 2, false);
   // makePools(235, 499, -580, 1.6, false);
   makePools(-1699, 295, -2106, 3.2, false);
@@ -265,7 +266,7 @@ function init() {
 
   // stats monitor
   stats = new Stats();
-  // document.body.appendChild(stats.dom);
+  document.body.appendChild(stats.dom);
 }
 
 
@@ -455,12 +456,12 @@ function updateControls() {
 
     if (moveForward || moveBackward || moveUpward) {
 
-      velocity.z -= direction.z * 1000.0 * delta;
-      velocity.y -= direction.y * 1000.0 * delta;
+      velocity.z -= direction.z * moveSpeed * delta;
+      velocity.y -= direction.y * moveSpeed * delta;
 
     }
 
-    if (moveLeft || moveRight) velocity.x -= direction.x * 1000.0 * delta;
+    if (moveLeft || moveRight) velocity.x -= direction.x * moveSpeed * delta;
 
 
     controls.moveRight(- velocity.x * delta);
@@ -519,10 +520,13 @@ function render() {
   if (characters[0]) {
     let dist = camera.position.distanceTo(characters[0].getWorldPosition(new THREE.Vector3()));
     if (dist < 400 && inIdle) {
+      console.log('close');
+      mixers[0]._actions[0].setEffectiveWeight(0);
       mixers[0]._actions[1].reset();
       mixers[0]._actions[1].play();
       inIdle = false;
     } else if (inIdle == false && dist > 400 && !gettingUp) {
+      console.log('far');
       mixers[0]._actions[2].reset();
       mixers[0]._actions[2].play();
       gettingUp = true;
@@ -1056,11 +1060,11 @@ function makePools(x, y, z, r, w) {
 
       const standAction = mixer.clipAction(character.animations[5]);
       standAction.loop = THREE.LoopOnce;
-      standAction.clampWhenFinished = true;
+      //standAction.clampWhenFinished = true;
 
       const turnAction = mixer.clipAction(character.animations[6]);
       turnAction.loop = THREE.LoopOnce;
-      turnAction.clampWhenFinished = true;
+      //turnAction.clampWhenFinished = true;
 
       // idleAction.play();
       mixer._actions[0].play();
@@ -1072,10 +1076,14 @@ function makePools(x, y, z, r, w) {
         switch (m.action._clip.name) {
 
           case 'idle2':
+            // console.log('hi');
+            // diveAction.reset();
+            // diveAction.crossFadeFrom(idleAction, 0.2, true);
+            // diveAction.play();
             break;
 
           case 'dive':
-            // console.log("diving");
+            console.log("dived");
             diving = true;
             character.scene.position.set(
               - BOUNDSX / 2 - waterPool.position.x + 2.5,
@@ -1087,6 +1095,7 @@ function makePools(x, y, z, r, w) {
             break;
 
           case 'climb':
+            console.log('climbed');
             character.scene.position.set(
               - BOUNDSX / 2 - waterPool.position.x + 1,
               platform.scale.y / 2,
@@ -1096,6 +1105,7 @@ function makePools(x, y, z, r, w) {
             break;
 
           case 'standUp':
+            console.log('stood');
             gsap.to(character.scene.position, {
               x: - BOUNDSX / 2 - waterPool.position.x,
               duration: 1,
@@ -1106,9 +1116,11 @@ function makePools(x, y, z, r, w) {
             break;
 
           case 'turn':
+            console.log('turned');
             character.scene.rotateY(1.5);
             idleAction.reset();
             // idleAction.crossFadeFrom(turnAction, 0.5, true);
+            idleAction.setEffectiveWeight(1);
             idleAction.play();
             inIdle = true;
             gettingUp = false;
