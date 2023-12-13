@@ -125,8 +125,8 @@ function init() {
     1,
     20000
   );
-  camera.position.set(200, 150, 200);
-  camera.lookAt(- 200, 100, - 200);
+  camera.position.set(1747, 1200, 513);
+  camera.lookAt(1247, 1000, 313);
 
   // axis helper -> X: red, Y: green, Z: blue
   const axesHelper = new THREE.AxesHelper(500);
@@ -235,10 +235,12 @@ function init() {
   texture.wrapT = THREE.RepeatWrapping;
   texture.colorSpace = THREE.SRGBColorSpace;
 
+  csm.setupMaterial(texture);
+
   //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
   mesh = new THREE.Mesh(geometry, texture);
 
-  mesh.visible = false;
+  mesh.visible = true;
 
   scene.add(mesh);
 
@@ -655,7 +657,7 @@ function makePools() {
   // platform - subtracting one geometry from another to create the pool
   let platform_P = new THREE.Mesh(baseGeometry);
   let platform_N = new THREE.Mesh(baseGeometry);
-  platform_P.scale.set(48, 10, 15);
+  platform_P.scale.set(48, 15, 15);
   platform_N.scale.set(16, 5, 8);
   platform_N.position.set(
     1,
@@ -1101,7 +1103,7 @@ function makePools() {
 
   // swimming pool
   swimmingPool.scale.set(10, 10, 10);
-  //swimmingPool.position.set(1247, 951, 263);
+  swimmingPool.position.set(1247, 950, 313);
   scene.add(swimmingPool);
 
   sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
