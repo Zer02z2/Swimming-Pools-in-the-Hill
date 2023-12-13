@@ -19,7 +19,7 @@ const poolUI = gui.addFolder("Swimming Pool");
 const viewPortUI = gui.addFolder("Viewport");
 
 // variables
-let cameraChoice = 2;
+let cameraChoice = 1;
 let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
 let mixers = [];
@@ -116,7 +116,8 @@ function init() {
 
   // scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color('#b8b8b8');
+  scene.background = new THREE.Color(0xefd1b5);
+  //scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
 
   // perspective camera
   camera = new THREE.PerspectiveCamera(
@@ -188,7 +189,8 @@ function init() {
   }
 
   // make swimming pool
-  makePools();
+  makePools(1247, 950, 313, 0, true);
+  makePools(1252, 1033, -3022, 2, false);
 
   // resize
   const onResize = () => {
@@ -439,12 +441,12 @@ function updateControls() {
 
     if (moveForward || moveBackward || moveUpward) {
 
-      velocity.z -= direction.z * 4000.0 * delta;
-      velocity.y -= direction.y * 4000.0 * delta;
+      velocity.z -= direction.z * 1000.0 * delta;
+      velocity.y -= direction.y * 1000.0 * delta;
 
     }
 
-    if (moveLeft || moveRight) velocity.x -= direction.x * 4000.0 * delta;
+    if (moveLeft || moveRight) velocity.x -= direction.x * 1000.0 * delta;
 
 
     controls.moveRight(- velocity.x * delta);
@@ -502,11 +504,11 @@ function render() {
 
   if (characters[0]) {
     let dist = camera.position.distanceTo(characters[0].getWorldPosition(new THREE.Vector3()));
-    if (dist < 200 && inIdle) {
+    if (dist < 400 && inIdle) {
       mixers[0]._actions[1].reset();
       mixers[0]._actions[1].play();
       inIdle = false;
-    } else if (inIdle == false && dist > 200 && !gettingUp) {
+    } else if (inIdle == false && dist > 400 && !gettingUp) {
       mixers[0]._actions[2].reset();
       mixers[0]._actions[2].play();
       gettingUp = true;
@@ -641,7 +643,7 @@ function initWater(waterPool) {
 
 // --------------------------------------- Swimming Pool ----------------------------------------------
 
-function makePools() {
+function makePools(x, y, z, r, w) {
 
   const swimmingPool = new THREE.Group();
   const waterPool = new THREE.Group();
@@ -685,8 +687,11 @@ function makePools() {
     heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
   };
   
-  initWater(waterPool);
-  valuesChanger();
+  if (w == true){
+    initWater(waterPool);
+    valuesChanger();
+  }
+
 
   // padding
   const makeSide = (length, width, x, z) => {
@@ -1103,11 +1108,12 @@ function makePools() {
 
   // swimming pool
   swimmingPool.scale.set(10, 10, 10);
-  swimmingPool.position.set(1247, 950, 313);
+  swimmingPool.position.set(x, y, z);
+  swimmingPool.rotateY(r);
   scene.add(swimmingPool);
 
   sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
-  sceneUI.add(swimmingPool.position, 'y', 0, 1000, 1).name('poolY');
+  sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
   sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
 
 }
