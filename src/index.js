@@ -20,7 +20,9 @@ const viewPortUI = gui.addFolder("Viewport");
 // variables
 let cameraChoice = 2;
 let app;
-let camera, controls, scene, renderer, stats, csm, csmHelper, mixer;
+let camera, controls, scene, renderer, stats, csm, csmHelper;
+let mixers = [];
+let characters = [];
 let texture, mesh;
 const clock = new THREE.Clock();
 
@@ -461,7 +463,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Update mixer
-  if (mixer != null) mixer.update(clock.getDelta());
+  if (mixers[0] != null) mixers[0].update(clock.getDelta());
 
   const blocker = document.getElementById('blocker');
   const instructions = document.getElementById('instructions');
@@ -977,12 +979,47 @@ function makePools() {
         node.material = newMaterial;
       })
 
-      mixer = new THREE.AnimationMixer(character.scene);
-      const action = mixer.clipAction(character.animations[4]);
+      let mixer = new THREE.AnimationMixer(character.scene);
+      mixers.push(mixer);
+      const idleAction = mixer.clipAction(character.animations[4]);
+      const diveAction = mixer.clipAction(character.animations[2]);
+      diveAction.loop = THREE.LoopOnce;
+      const climbAction = mixer.clipAction(character.animations[1]);
+      climbAction.loop = THREE.LoopOnce;
+      const standAction = mixer.clipAction(character.animations[5]);
+      standAction.loop = THREE.LoopOnce;
+      const turnAction = mixer.clipAction(character.animations[6]);
+      turnAction.loop = THREE.LoopOnce;
 
-      action.play();
+      // idleAction.play();
+      mixer._actions[1].play();
 
-      console.log(character);
+      mixer.addEventListener('finished', (m) => {
+
+        switch (m.action._clip.name) {
+
+          case 'dive':
+            climbAction.reset();
+            climbAction.play();
+            break;
+
+          case 'climb':
+            standAction.reset();
+            standAction.play();
+            break;
+
+          case 'standUp':
+            turnAction.reset();
+            turnAction.play();
+            break;
+
+          case 'turn':
+            idleAction.reset();
+            idleAction.play();
+        }
+      })
+
+      console.log(mixer._actions);
       
       character.scene.scale.set(2, 2, 2);
       character.scene.position.set(
