@@ -198,6 +198,7 @@ function init() {
 
   // make swimming pool
   let newPool = new Pool(1247, 950, 346, 0, true, scene, renderer, csm);
+  newPool.addModels();
   swimmingPools.push(newPool);
   // makePools(1247, 950, 346, 0, true, scene, renderer);
   // makePools(1252, 1033, -3022, 2, false);

@@ -16,14 +16,24 @@ export default class SwimmingPool {
         this.waterPool = new THREE.Group();
         this.viewPort = new THREE.Group();
 
+        // model loader
         this.gltfLoader = new GLTFLoader();
+        this.threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg");
+        this.fourTone = new THREE.TextureLoader().load("./gradientMap/fourTone.jpg");
+        this.fiveTone = new THREE.TextureLoader().load("./gradientMap/fiveTone.jpg");
+
+        this.threeTone.minFilter = this.threeTone.magFilter =
+            this.fourTone.minFilter = this.fourTone.magFilter =
+            this.fiveTone.minFilter = this.fiveTone.magFilter = THREE.NearestFilter;
+
+        this.csm = csm;
 
         // box
         this.baseGeometry = new THREE.BoxGeometry(1, 1, 1);
         this.baseMaterial = new THREE.MeshStandardMaterial({
             color: 'rgb(220, 220, 220)',
         });
-        csm.setupMaterial(this.baseMaterial);
+        this.csm.setupMaterial(this.baseMaterial);
 
         // platform - subtracting one geometry from another to create the pool
         let platform_P = new THREE.Mesh(this.baseGeometry);
@@ -101,22 +111,22 @@ export default class SwimmingPool {
         this.swimmingPool.add(this.waterPool);
 
         // view port, build vew platform
-        let viewPlatform = new THREE.Mesh(this.baseGeometry, this.baseMaterial);
-        viewPlatform.scale.set(
+        this.viewPlatform = new THREE.Mesh(this.baseGeometry, this.baseMaterial);
+        this.viewPlatform.scale.set(
             this.platform.scale.x / 3,
             this.platform.scale.y - 1,
             this.platform.scale.z / 1.5
         );
 
-        viewPlatform.castShadow = true;
-        viewPlatform.receiveShadow = true;
-        this.viewPort.add(viewPlatform);
+        this.viewPlatform.castShadow = true;
+        this.viewPlatform.receiveShadow = true;
+        this.viewPort.add(this.viewPlatform);
 
         // adjust view port
         this.viewPort.position.set(
-            - this.platform.scale.x / 2 + viewPlatform.scale.x / 2,
-            - this.platform.scale.y / 2 + viewPlatform.scale.y / 2,
-            - this.platform.scale.z / 2 - viewPlatform.scale.z / 2
+            - this.platform.scale.x / 2 + this.viewPlatform.scale.x / 2,
+            - this.platform.scale.y / 2 + this.viewPlatform.scale.y / 2,
+            - this.platform.scale.z / 2 - this.viewPlatform.scale.z / 2
         );
 
         this.swimmingPool.add(this.viewPort);
@@ -157,16 +167,16 @@ export default class SwimmingPool {
                             if (chair.scene.children.length > 4) return 'rgb(207, 170, 122)';
                             else return '#ffffff';
                         })(),
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     chairComponent.material = newMaterial;
                     chairModel.add(chairComponent);
                 }
 
                 chairModel.scale.set(2, 2, 2);
                 chairModel.rotation.y = Math.PI / 3;
-                chairModel.position.set(-4, viewPlatform.scale.y / 2, 2);
+                chairModel.position.set(-4, this.viewPlatform.scale.y / 2, 2);
                 this.viewPort.add(chairModel);
 
                 // if (debugging) {
@@ -196,16 +206,16 @@ export default class SwimmingPool {
                             if (couch.scene.children.length > 7) return 'rgb(207, 170, 122)';
                             else return '#ffffff';
                         })(),
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     couchComponent.material = newMaterial;
                     couchModel.add(couchComponent);
                 }
 
                 couchModel.scale.set(0.04, 0.04, 0.04);
                 couchModel.rotation.y = Math.PI * 1.05;
-                couchModel.position.set(3, viewPlatform.scale.y / 2, 2.5);
+                couchModel.position.set(3, this.viewPlatform.scale.y / 2, 2.5);
                 this.viewPort.add(couchModel);
 
                 // if (debugging) {
@@ -232,9 +242,9 @@ export default class SwimmingPool {
 
                     let newMaterial = new THREE.MeshToonMaterial({
                         color: '#ffffff',
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     tableComponent.material = newMaterial
                     tableModel.add(tableComponent);
 
@@ -242,7 +252,7 @@ export default class SwimmingPool {
 
                 tableModel.scale.set(4, 4, 4);
                 tableModel.rotation.y = Math.PI * 1.05;
-                tableModel.position.set(3.1, viewPlatform.scale.y / 2, - 2.8);
+                tableModel.position.set(3.1, this.viewPlatform.scale.y / 2, - 2.8);
                 this.viewPort.add(tableModel);
 
                 // if (debugging) {
@@ -276,16 +286,16 @@ export default class SwimmingPool {
                             }
                             else return '#ffffff';
                         })(),
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     plantComponent.material = newMaterial;
                     plantModel.add(plantComponent);
 
                 }
 
                 plantModel.scale.set(1, 1, 1);
-                plantModel.position.set(-5, viewPlatform.scale.y / 2, -3);
+                plantModel.position.set(-5, this.viewPlatform.scale.y / 2, -3);
                 this.viewPort.add(plantModel);
             }
         )
@@ -307,15 +317,15 @@ export default class SwimmingPool {
 
                     let newMaterial = new THREE.MeshToonMaterial({
                         color: '#ffffff',
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     umbrellaComponent.material = newMaterial;
                     umbrellaModel.add(umbrellaComponent);
                 }
 
                 umbrellaModel.scale.set(0.03, 0.03, 0.03);
-                umbrellaModel.position.set(-1.1, viewPlatform.scale.y / 2, 3.4);
+                umbrellaModel.position.set(-1.1, this.viewPlatform.scale.y / 2, 3.4);
                 umbrellaModel.rotateY(90);
                 this.viewPort.add(umbrellaModel);
 
@@ -343,10 +353,10 @@ export default class SwimmingPool {
 
                     let newMaterial = new THREE.MeshToonMaterial({
                         color: '#ffffff',
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
                     chairComponent.material = newMaterial;
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     chairModel.add(chairComponent);
 
                 }
@@ -384,9 +394,9 @@ export default class SwimmingPool {
 
                     let newMaterial = new THREE.MeshToonMaterial({
                         color: '#ffffff',
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     umbrellaComponent.material = newMaterial;
                     umbrellaModel.add(umbrellaComponent);
 
@@ -425,9 +435,9 @@ export default class SwimmingPool {
 
                     let newMaterial = new THREE.MeshToonMaterial({
                         color: '#ffffff',
-                        gradientMap: fiveTone
+                        gradientMap: this.fiveTone
                     });
-                    csm.setupMaterial(newMaterial);
+                    this.csm.setupMaterial(newMaterial);
                     node.material = newMaterial;
                 })
 
@@ -598,7 +608,7 @@ class Water {
 
         // Creates the gpu computation class and sets it up
 
-        
+
         this.gpuCompute = new GPUComputationRenderer(this.WIDTHX, this.WIDTHY, renderer);
 
         if (renderer.capabilities.isWebGL2 === false) {
