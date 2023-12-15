@@ -162,14 +162,19 @@ function init() {
   // make swimming pool
   let newHill = new Hill(csm, scene);
   hills.push(newHill);
+
   let newPool1 = new Pool(1247, 950, 346, 0, true, newHill, renderer, csm);
   swimmingPools.push(newPool1);
-
-  //let newPool2 = new Pool(1252, 1033, -3022, 2, true, scene, renderer, csm);
-  //let newPool3 = new Pool(235, 499, -580, 1.6, true, scene, renderer, csm);
-  //let newPool4 = new Pool(-1699, 295, -2106, 3.2, true, scene, renderer, csm);
-  //let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, true, scene, renderer, csm);
-  //let newPool6 = new Pool(1965, 677, 3593, 0.4, true, scene, renderer, csm);
+  let newPool2 = new Pool(1252, 1033, -3022, 2, true, newHill, renderer, csm);
+  swimmingPools.push(newPool2);
+  let newPool3 = new Pool(235, 499, -580, 1.6, true, newHill, renderer, csm);
+  swimmingPools.push(newPool3);
+  let newPool4 = new Pool(-1699, 295, -2106, 3.2, true, newHill, renderer, csm);
+  swimmingPools.push(newPool4);
+  let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, true, newHill, renderer, csm);
+  swimmingPools.push(newPool5);
+  let newPool6 = new Pool(1965, 677, 3593, 0.4, true, newHill, renderer, csm);
+  swimmingPools.push(newPool6);
 
   // resize
   const onResize = () => {
@@ -398,9 +403,10 @@ function animate() {
 
 function render() {
 
+  let time = clock.getDelta();
   for (const p of swimmingPools) {
     // mixer update
-    if (p.mixer != null) p.mixer.update(clock.getDelta());
+    if (p.mixer != null) p.mixer.update(time);
 
     if (p.character) {
       let dist = camera.position.distanceTo(p.character.getWorldPosition(new THREE.Vector3()));
@@ -408,7 +414,7 @@ function render() {
         console.log('close');
         p.mixer._actions[0].setEffectiveWeight(0);
         p.mixer._actions[1].setEffectiveWeight(1);
-       p.mixer._actions[1].reset();
+        p.mixer._actions[1].reset();
         p.mixer._actions[1].play();
         p.inIdle = false;
       } else if (p.inIdle == false && dist > 400 && !p.gettingUp) {
@@ -417,7 +423,7 @@ function render() {
         p.mixer._actions[2].play();
         p.gettingUp = true;
       }
-    } 
+    }
 
 
     // water update
@@ -436,13 +442,13 @@ function render() {
         x = 10000;
         z = 10000;
       }
-    
+
       uniforms['pos'].value.set(x, z);
-    
-    
+
+
       // Do the gpu computation
       p.water.gpuCompute.compute();
-    
+
       // Get compute output in custom uniform
       p.water.waterUniforms['heightmap'].value = p.water.gpuCompute.getCurrentRenderTarget(p.water.heightmapVariable).texture;
     }

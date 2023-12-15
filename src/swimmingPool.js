@@ -472,7 +472,6 @@ export default class SwimmingPool {
                             break;
 
                         case 'dive':
-                            console.log("dived");
                             this.diveAction.setEffectiveWeight(0);
                             this.climbAction.setEffectiveWeight(1);
                             this.diving = true;
@@ -484,7 +483,6 @@ export default class SwimmingPool {
                             break;
 
                         case 'climb':
-                            console.log('climbed');
                             this.climbAction.setEffectiveWeight(0);
                             this.standAction.setEffectiveWeight(1);
                             this.character.position.set(
@@ -496,7 +494,6 @@ export default class SwimmingPool {
                             break;
 
                         case 'standUp':
-                            console.log('stood');
                             this.standAction.setEffectiveWeight(0);
                             this.turnAction.setEffectiveWeight(1);
                             gsap.to(this.character.position, {
@@ -509,7 +506,6 @@ export default class SwimmingPool {
                             break;
 
                         case 'turn':
-                            console.log('turned');
                             this.turnAction.setEffectiveWeight(0);
                             this.idleAction.setEffectiveWeight(1);
                             this.character.rotateY(-3);
