@@ -10,18 +10,16 @@ import Pool from './swimmingPool.js';
 import Hill from './hill.js/';
 
 // Debug
-let debugging = false;
+let debugging = true;
 let gui, sceneUI, poolUI, viewPortUI;
 if (debugging) {
   gui = new GUI();
   sceneUI = gui.addFolder("Scene");
-  poolUI = gui.addFolder("Swimming Pool");
-  viewPortUI = gui.addFolder("Viewport");
 }
 
 
 // variables
-let cameraChoice = 2;
+let cameraChoice = 1;
 let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
 let hills = [];
@@ -38,7 +36,7 @@ let moveUpward = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-let moveSpeed = 10000;
+let moveSpeed = 2000;
 
 // CSM param
 const params = {
@@ -85,7 +83,7 @@ function init() {
   // scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xefd1b5);
-  scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
+  if (!debugging) scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
 
   // perspective camera
   camera = new THREE.PerspectiveCamera(
@@ -167,15 +165,24 @@ function init() {
   swimmingPools.push(newPool1);
   let newPool2 = new Pool(1252, 1033, -3022, 2, newHill, renderer, csm);
   swimmingPools.push(newPool2);
-  let newPool3 = new Pool(235, 499, -580, 1.6, newHill, renderer, csm);
+  let newPool3 = new Pool(-326, 610, 2625, - 2.5, newHill, renderer, csm);
   swimmingPools.push(newPool3);
   let newPool4 = new Pool(-1699, 295, -2106, 3.2, newHill, renderer, csm);
   swimmingPools.push(newPool4);
   let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, newHill, renderer, csm);
   swimmingPools.push(newPool5);
-  let newPool6 = new Pool(1965, 677, 3593, 0.4, newHill, renderer, csm);
+  let newPool6 = new Pool(2722, 350, 1542, -2.2, newHill, renderer, csm);
   swimmingPools.push(newPool6);
 
+  if (debugging == true) {
+    
+    for (let i = 0; i < swimmingPools.length; i ++) {
+
+      sceneUI.add(swimmingPools[i].swimmingPool.position, 'x', -4000, 4000, 1).name(i + ' poolX');
+      sceneUI.add(swimmingPools[i].swimmingPool.position, 'y', 0, 2000, 1).name(i + ' poolY');
+      sceneUI.add(swimmingPools[i].swimmingPool.position, 'z', -4000, 4000, 1).name(i + ' poolZ');
+    }
+  }
   // resize
   const onResize = () => {
 
@@ -191,7 +198,7 @@ function init() {
 
   // stats monitor
   stats = new Stats();
-  document.body.appendChild(stats.dom);
+  if (debugging) document.body.appendChild(stats.dom);
 }
 
 
@@ -415,14 +422,13 @@ function render() {
       else p.updateWater(false);
       
       if (dist < 400 && p.inIdle) {
-        console.log('close');
         p.mixer._actions[0].setEffectiveWeight(0);
         p.mixer._actions[1].setEffectiveWeight(1);
         p.mixer._actions[1].reset();
         p.mixer._actions[1].play();
         p.inIdle = false;
       } else if (p.inIdle == false && dist > 400 && !p.gettingUp) {
-        console.log('far');
+        p.climbing = true;
         p.mixer._actions[2].reset();
         p.mixer._actions[2].play();
         p.gettingUp = true;
@@ -442,6 +448,12 @@ function render() {
         x = -4;
         z = 0;
         p.diving = false
+      } else if (p.climbing == true) {
+
+        x = -6.5;
+        z = 0;
+        p.climbing = false;
+
       } else {
         x = 10000;
         z = 10000;

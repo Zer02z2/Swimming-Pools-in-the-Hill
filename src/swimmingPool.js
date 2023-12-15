@@ -3,6 +3,7 @@ import { CSG } from "three-csg-ts";
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
 import { gsap } from "gsap";
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 export default class SwimmingPool {
 
@@ -138,12 +139,6 @@ export default class SwimmingPool {
         this.swimmingPool.position.set(this.x, this.y, this.z);
         this.swimmingPool.rotateY(this.r);
         scene.add(this.swimmingPool);
-
-        // if (debugging) {
-        //   sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
-        //   sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
-        //   sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
-        // }
 
         this.addModels();
         this.addCharacter();
@@ -430,6 +425,7 @@ export default class SwimmingPool {
         this.inIdle = true;
         this.diving = false;
         this.gettingUp = false;
+        this.climbing = false;
 
         this.gltfLoader.load(
 
