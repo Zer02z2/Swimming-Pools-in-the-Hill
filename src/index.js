@@ -11,7 +11,7 @@ import Hill from './hill.js/';
 
 // Debug
 let debugging = false;
-let isFogged = false;
+let isFogged = true;
 let gui, sceneUI, poolUI, viewPortUI;
 if (debugging) {
   gui = new GUI();
@@ -37,7 +37,7 @@ let moveUpward = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-let moveSpeed = 2000;
+let moveSpeed = 1000;
 
 // CSM param
 const params = {
@@ -84,14 +84,14 @@ function init() {
   // scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xefd1b5);
-  if (isFogged) scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
+  if (isFogged) scene.fog = new THREE.FogExp2(0xefd1b5, 0.0006);
 
   // perspective camera
   camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
     1,
-    4000
+    3000
   );
   camera.position.set(-2003, 1200, -3237);
   camera.lookAt(-2503, 1000, -3437);
@@ -165,7 +165,7 @@ function init() {
     swimmingPools.push(newPool1);
     let newPool2 = new Pool(1252, 1033, -3022, 2, hill, renderer, csm);
     swimmingPools.push(newPool2);
-    let newPool3 = new Pool(-326, 610, 2625, - 2.5, hill, renderer, csm);
+    let newPool3 = new Pool(-346, 610, 2525, - 2.5, hill, renderer, csm);
     swimmingPools.push(newPool3);
     let newPool4 = new Pool(-1699, 295, -2106, 3.2, hill, renderer, csm);
     swimmingPools.push(newPool4);
@@ -233,7 +233,7 @@ function init() {
 
   // stats monitor
   stats = new Stats();
-  document.body.appendChild(stats.dom);
+  // document.body.appendChild(stats.dom);
 }
 
 
@@ -435,6 +435,17 @@ function animate() {
 
   }
 
+  if (camera.position.x < - 7500) {
+    camera.position.x += 2 * 7500;
+  } else if (camera.position.x > 7500) {
+    camera.position.x -= 2 * 7500;
+  }
+
+  if (camera.position.z < - 7500) {
+    camera.position.z += 2 * 7500;
+  } else if (camera.position.z > 7500) {
+    camera.position.z -= 2 * 7500;
+  }
   render();
 
   renderer.render(scene, camera);
