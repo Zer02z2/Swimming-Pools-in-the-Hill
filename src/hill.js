@@ -3,8 +3,10 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 
 export default class Hill {
 
-  constructor(csm, scene) {
+  constructor(width, height, csm, scene) {
 
+    this.width = width;
+    this.height = height;
     this.group = new THREE.Group();
     this.poolList = [];
     this.worldWidth = 256;
@@ -21,7 +23,7 @@ export default class Hill {
     // generate mountains
     this.data = generateHeight(this.worldWidth, this.worldDepth);
 
-    this.geometry = new THREE.PlaneGeometry(7500, 7500, this.worldWidth - 1, this.worldDepth - 1);
+    this.geometry = new THREE.PlaneGeometry(this.width, this.height, this.worldWidth - 1, this.worldDepth - 1);
     this.geometry.rotateX(- Math.PI / 2);
 
     const vertices = this.geometry.attributes.position.array;

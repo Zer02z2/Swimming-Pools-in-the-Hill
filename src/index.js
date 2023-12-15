@@ -98,7 +98,7 @@ function init() {
   // axis helper -> X: red, Y: green, Z: blue
   const axesHelper = new THREE.AxesHelper(500);
   axesHelper.position.y = 0.001; // above the ground slightly
-  // scene.add(axesHelper);
+  scene.add(axesHelper);
   if (debugging) {
     sceneUI.add(axesHelper, 'visible').name('Axes Helper');
     sceneUI.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
@@ -158,7 +158,11 @@ function init() {
   }
 
   // make swimming pool
-  let newHill = new Hill(csm, scene);
+  const makeHill = () => {
+
+
+  }
+  let newHill = new Hill(7500, 7500, csm, scene);
   hills.push(newHill);
 
   let newPool1 = new Pool(1247, 950, 346, 0, newHill, renderer, csm);
