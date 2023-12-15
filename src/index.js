@@ -29,6 +29,7 @@ if (debugging) {
 let cameraChoice = 2;
 let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
+let hills = [];
 let swimmingPools = [];
 // let texture, mesh;
 const clock = new THREE.Clock();
@@ -199,23 +200,15 @@ function init() {
 
   // make swimming pool
   let newHill = new Hill(csm, scene);
+  hills.push(newHill);
   let newPool1 = new Pool(1247, 950, 346, 0, true, newHill, renderer, csm);
-  //newPool.addModels();
-  //newPool.addCharacter();
-  //swimmingPools.push(newPool);
+  swimmingPools.push(newPool1);
 
   //let newPool2 = new Pool(1252, 1033, -3022, 2, true, scene, renderer, csm);
   //let newPool3 = new Pool(235, 499, -580, 1.6, true, scene, renderer, csm);
   //let newPool4 = new Pool(-1699, 295, -2106, 3.2, true, scene, renderer, csm);
   //let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, true, scene, renderer, csm);
   //let newPool6 = new Pool(1965, 677, 3593, 0.4, true, scene, renderer, csm);
-  
-  // makePools(1247, 950, 346, 0, true, scene, renderer);
-  // makePools(1252, 1033, -3022, 2, false);
-  // // makePools(235, 499, -580, 1.6, false);
-  // makePools(-1699, 295, -2106, 3.2, false);
-  // makePools(- 1903, 1211, -71, - 1.5, false);
-  // makePools(1965, 677, 3593, 0.4, false);
 
   // resize
   const onResize = () => {
@@ -516,7 +509,7 @@ function animate() {
 
   }
 
-  // render();
+  render();
 
   renderer.render(scene, camera);
 
@@ -527,7 +520,6 @@ function animate() {
 function render() {
 
   for (const p of swimmingPools) {
-
     // mixer update
     if (p.mixer != null) p.mixer.update(clock.getDelta());
 
@@ -535,15 +527,15 @@ function render() {
       let dist = camera.position.distanceTo(p.character.getWorldPosition(new THREE.Vector3()));
       if (dist < 400 && p.inIdle) {
         console.log('close');
-        p.mixers._actions[0].setEffectiveWeight(0);
-        p.mixers._actions[1].setEffectiveWeight(1);
-        p.mixers._actions[1].reset();
-        p.mixers._actions[1].play();
+        p.mixer._actions[0].setEffectiveWeight(0);
+        p.mixer._actions[1].setEffectiveWeight(1);
+       p.mixer._actions[1].reset();
+        p.mixer._actions[1].play();
         p.inIdle = false;
       } else if (p.inIdle == false && dist > 400 && !p.gettingUp) {
         console.log('far');
-        p.mixers._actions[2].reset();
-        p.mixers._actions[2].play();
+        p.mixer._actions[2].reset();
+        p.mixer._actions[2].play();
         p.gettingUp = true;
       }
     } 
@@ -570,14 +562,12 @@ function render() {
     
     
       // Do the gpu computation
-      p.gpuCompute.compute();
+      p.water.gpuCompute.compute();
     
       // Get compute output in custom uniform
-      p.waterUniforms['heightmap'].value = p.gpuCompute.getCurrentRenderTarget(p.heightmapVariable).texture;
+      p.water.waterUniforms['heightmap'].value = p.water.gpuCompute.getCurrentRenderTarget(p.water.heightmapVariable).texture;
     }
-  
   }
-
 }
 
 

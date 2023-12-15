@@ -6,6 +6,7 @@ export default class Hill {
     constructor(csm, scene) {
 
         this.group = new THREE.Group();
+        this.poolList = [];
         this.worldWidth = 256;
         this.worldDepth = 256;
 
@@ -69,6 +70,7 @@ export default class Hill {
 
     add(pool) {
         this.group.add(pool);
+        this.poolList.push(pool);
     }
 }
 

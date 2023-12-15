@@ -144,6 +144,9 @@ export default class SwimmingPool {
         //   sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
         //   sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
         // }
+
+        this.addModels();
+        this.addCharacter();
     }
 
     addModels() {
@@ -474,7 +477,7 @@ export default class SwimmingPool {
                             this.climbAction.setEffectiveWeight(1);
                             this.diving = true;
                             this.character.position.set(
-                                - BOUNDSX / 2 - this.waterPool.position.x + 2.5,
+                                - this.water.BOUNDSX / 2 - this.waterPool.position.x + 2.5,
                                 this.platform.scale.y / 2 - 3,
                                 this.waterPool.position.z);
                             this.character.rotateY(3);
@@ -485,7 +488,7 @@ export default class SwimmingPool {
                             this.climbAction.setEffectiveWeight(0);
                             this.standAction.setEffectiveWeight(1);
                             this.character.position.set(
-                                - BOUNDSX / 2 - this.waterPool.position.x + 1,
+                                - this.water.BOUNDSX / 2 - this.waterPool.position.x + 1,
                                 this.platform.scale.y / 2,
                                 this.waterPool.position.z);
                             this.standAction.reset();
@@ -497,7 +500,7 @@ export default class SwimmingPool {
                             this.standAction.setEffectiveWeight(0);
                             this.turnAction.setEffectiveWeight(1);
                             gsap.to(this.character.position, {
-                                x: - BOUNDSX / 2 - this.waterPool.position.x,
+                                x: - this.water.BOUNDSX / 2 - this.waterPool.position.x,
                                 duration: 1,
                             });
                             this.turnAction.crossFadeFrom(this.standAction, 0.5, true);
