@@ -1,15 +1,22 @@
+import * as THREE from "three";
+import { CSG } from "three-csg-ts";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
+import { gsap } from "gsap";
+
 export default class SwimmingPool {
 
-    constructor(x, y, z, r, w) {
+    constructor(x, y, z, r, w, scene, renderer, csm) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.r = r;
-        this.w = w;
 
         this.swimmingPool = new THREE.Group();
         this.waterPool = new THREE.Group();
         this.viewPort = new THREE.Group();
+
+        this.gltfLoader = new GLTFLoader();
 
         // box
         this.baseGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -19,8 +26,8 @@ export default class SwimmingPool {
         csm.setupMaterial(this.baseMaterial);
 
         // platform - subtracting one geometry from another to create the pool
-        let platform_P = new THREE.Mesh(baseGeometry);
-        let platform_N = new THREE.Mesh(baseGeometry);
+        let platform_P = new THREE.Mesh(this.baseGeometry);
+        let platform_N = new THREE.Mesh(this.baseGeometry);
         platform_P.scale.set(48, 15, 15);
         platform_N.scale.set(16, 5, 8);
         platform_N.position.set(
@@ -36,22 +43,22 @@ export default class SwimmingPool {
         let platformCSG_N = CSG.fromMesh(platform_N);
         let platformCSG = platformCSG_P.subtract(platformCSG_N);
 
-        this.platform = CSG.toMesh(platformCSG, platform_P.matrix, baseMaterial);
+        this.platform = CSG.toMesh(platformCSG, platform_P.matrix, this.baseMaterial);
         this.platform.castShadow = true;
         this.platform.receiveShadow = true;
 
         this.swimmingPool.add(this.platform);
 
         // the pool itself
-        const valuesChanger = () => {
+        const valuesChanger = (water) => {
 
-            heightmapVariable.material.uniforms['size'].value = 1;
-            heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
+            water.heightmapVariable.material.uniforms['size'].value = 1;
+            water.heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
         };
 
         if (w == true) {
-            initWater(this.waterPool);
-            valuesChanger();
+            this.water = new Water(this.waterPool, renderer);
+            valuesChanger(this.water);
         } else {
 
             let waterMaterial = new THREE.MeshStandardMaterial({
@@ -81,15 +88,15 @@ export default class SwimmingPool {
 
         }
 
-        makeSide(BOUNDSX + 2, 1, 0, BOUNDSY / 2 + 0.5);
-        makeSide(BOUNDSX + 2, 1, 0, - BOUNDSY / 2 - 0.5);
-        makeSide(1, BOUNDSY + 2, BOUNDSX / 2 + 0.5, 0);
-        makeSide(1, BOUNDSY + 2, - BOUNDSX / 2 - 0.5, 0);
+        makeSide(this.water.BOUNDSX + 2, 1, 0, this.water.BOUNDSY / 2 + 0.5);
+        makeSide(this.water.BOUNDSX + 2, 1, 0, - this.water.BOUNDSY / 2 - 0.5);
+        makeSide(1, this.water.BOUNDSY + 2, this.water.BOUNDSX / 2 + 0.5, 0);
+        makeSide(1, this.water.BOUNDSY + 2, - this.water.BOUNDSX / 2 - 0.5, 0);
 
         this.waterPool.position.set(
             1,
             this.platform.scale.y / 2 - 0.5,
-            - this.platform.scale.z / 2 + BOUNDSY / 2 + 2
+            - this.platform.scale.z / 2 + this.water.BOUNDSY / 2 + 2
         );
         this.swimmingPool.add(this.waterPool);
 
@@ -103,10 +110,35 @@ export default class SwimmingPool {
 
         viewPlatform.castShadow = true;
         viewPlatform.receiveShadow = true;
-        this.thisviewPort.add(viewPlatform);
+        this.viewPort.add(viewPlatform);
 
+        // adjust view port
+        this.viewPort.position.set(
+            - this.platform.scale.x / 2 + viewPlatform.scale.x / 2,
+            - this.platform.scale.y / 2 + viewPlatform.scale.y / 2,
+            - this.platform.scale.z / 2 - viewPlatform.scale.z / 2
+        );
+
+        this.swimmingPool.add(this.viewPort);
+
+
+
+        // swimming pool
+        this.swimmingPool.scale.set(10, 10, 10);
+        this.swimmingPool.position.set(this.x, this.y, this.z);
+        this.swimmingPool.rotateY(this.r);
+        scene.add(this.swimmingPool);
+
+        // if (debugging) {
+        //   sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
+        //   sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
+        //   sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
+        // }
+    }
+
+    addModels() {
         // import armchair
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/armchair/SofaDesign.glb',
             (chair) => {
@@ -146,7 +178,7 @@ export default class SwimmingPool {
         );
 
         // import couch
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/couch/couch.glb',
             (couch) => {
@@ -185,7 +217,7 @@ export default class SwimmingPool {
         );
 
         // import table
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/table/table.glb',
             (table) => {
@@ -222,7 +254,7 @@ export default class SwimmingPool {
         );
 
         // import plant
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/plant_pot/pedilanthus_plant.glb',
             (plant) => {
@@ -259,7 +291,7 @@ export default class SwimmingPool {
         )
 
         // import opened umbrella
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/umbrella/opened.glb',
             (umbrella) => {
@@ -295,7 +327,7 @@ export default class SwimmingPool {
         )
 
         // import pool chair
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/armchair/poolChair.glb',
             (chair) => {
@@ -336,7 +368,7 @@ export default class SwimmingPool {
         )
 
         // import closed umbrella
-        gltfLoader.load(
+        this.gltfLoader.load(
 
             './models/umbrella/closed.glb',
             (umbrella) => {
@@ -371,10 +403,15 @@ export default class SwimmingPool {
                 // }
             }
         )
+    }
 
+    addCharacter() {
         // import character
-        diving = gettingUp = false;
-        gltfLoader.load(
+        this.inIdle = true;
+        this.diving = false;
+        this.gettingUp = false;
+
+        this.gltfLoader.load(
 
             './models/character/boxMan.glb',
             (character) => {
@@ -413,8 +450,6 @@ export default class SwimmingPool {
 
                 // idleAction.play();
                 this.mixer._actions[0].play();
-                this.inIdle = true;
-                this.gettingUp = false;
 
                 this.mixer.addEventListener('finished', (m) => {
 
@@ -471,144 +506,148 @@ export default class SwimmingPool {
                             this.inIdle = true;
                             this.gettingUp = false;
                     }
-                })
+                });
+            });
 
-                // console.log(mixer._actions);
+        // console.log(mixer._actions);
 
-                this.character.scale.set(2, 2, 2);
-                this.character.position.set(
-                    - BOUNDSX / 2 - this.waterPool.position.x,
-                    this.platform.scale.y / 2,
-                    this.waterPool.position.z);
+        this.character.scale.set(2, 2, 2);
+        this.character.position.set(
+            - BOUNDSX / 2 - this.waterPool.position.x,
+            this.platform.scale.y / 2,
+            this.waterPool.position.z);
 
-                this.character.rotateY(1.5);
+        this.character.rotateY(1.5);
 
-                this.swimmingPool.add(this.character);
-            }
-        );
-
-
-        // adjust view port
-        this.viewPort.position.set(
-            - this.platform.scale.x / 2 + viewPlatform.scale.x / 2,
-            - this.platform.scale.y / 2 + viewPlatform.scale.y / 2,
-            - this.platform.scale.z / 2 - viewPlatform.scale.z / 2
-        );
-
-        this.swimmingPool.add(this.viewPort);
-
-
-
-        // swimming pool
-        this.swimmingPool.scale.set(10, 10, 10);
-        this.swimmingPool.position.set(this.x, this.y, this.z);
-        this.swimmingPool.rotateY(this.r);
-        scene.add(this.swimmingPool);
-
-        // if (debugging) {
-        //   sceneUI.add(swimmingPool.position, 'x', -4000, 4000, 1).name('poolX');
-        //   sceneUI.add(swimmingPool.position, 'y', 0, 2000, 1).name('poolY');
-        //   sceneUI.add(swimmingPool.position, 'z', -4000, 4000, 1).name('poolZ');
-        // }
-
+        this.swimmingPool.add(this.character);
     }
+
+
 }
 
-function initWater(waterPool) {
 
-    const materialColor = '#031745';
-  
-    const geometry = new THREE.PlaneGeometry(BOUNDSX, BOUNDSY, WIDTHX - 1, WIDTHY - 1);
-  
-    // material: make a THREE.ShaderMaterial clone of THREE.MeshPhongMaterial, with customized vertex shader
-    const material = new THREE.ShaderMaterial({
-      uniforms: THREE.UniformsUtils.merge([
-        THREE.ShaderLib['phong'].uniforms,
-        {
-          'heightmap': { value: null }
+
+
+class Water {
+
+    constructor(waterPool, renderer) {
+        // water
+        // Texture width for simulation
+        this.WIDTHX = 128;
+        this.WIDTHY = 64;
+
+        // Water size in system units
+        this.BOUNDSX = 16;
+        this.BOUNDSY = 8;
+
+        this.waterMesh;
+        this.gpuCompute;
+        this.heightmapVariable;
+        this.waterUniforms;
+        this.readWaterLevelShader;
+        this.readWaterLevelRenderTarget;
+        this.readWaterLevelImage;
+        this.waterNormal = new THREE.Vector3();
+
+        // const simplex = new SimplexNoise();
+
+        this.waterX = 0;
+        this.waterZ = 0;
+
+        const materialColor = '#031745';
+
+        const geometry = new THREE.PlaneGeometry(this.BOUNDSX, this.BOUNDSY, this.WIDTHX - 1, this.WIDTHY - 1);
+
+        // material: make a THREE.ShaderMaterial clone of THREE.MeshPhongMaterial, with customized vertex shader
+        const material = new THREE.ShaderMaterial({
+            uniforms: THREE.UniformsUtils.merge([
+                THREE.ShaderLib['phong'].uniforms,
+                {
+                    'heightmap': { value: null }
+                }
+            ]),
+            vertexShader: document.getElementById('waterVertexShader').textContent,
+            fragmentShader: THREE.ShaderChunk['meshphong_frag']
+
+        });
+
+        material.lights = true;
+
+        // Material attributes from THREE.MeshPhongMaterial
+        // Sets the uniforms with the material values
+        material.uniforms['diffuse'].value = new THREE.Color(materialColor);
+        material.uniforms['specular'].value = new THREE.Color(0x111111);
+        material.uniforms['shininess'].value = Math.max(50, 1e-4);
+        material.uniforms['opacity'].value = material.opacity;
+
+        // Defines
+        material.defines.WIDTHX = this.WIDTHX.toFixed(1);
+        material.defines.WIDTHY = this.WIDTHY.toFixed(1);
+        material.defines.BOUNDSX = this.BOUNDSX.toFixed(1);
+        material.defines.BOUNDSY = this.BOUNDSY.toFixed(1);
+
+        this.waterUniforms = material.uniforms;
+
+        this.waterMesh = new THREE.Mesh(geometry, material);
+        this.waterMesh.rotation.x = - Math.PI / 2;
+        this.waterMesh.matrixAutoUpdate = false;
+        this.waterMesh.position.set(0, 0.5, 0);
+        this.waterMesh.updateMatrix();
+
+        waterPool.add(this.waterMesh);
+
+        // Creates the gpu computation class and sets it up
+
+        
+        this.gpuCompute = new GPUComputationRenderer(this.WIDTHX, this.WIDTHY, renderer);
+
+        if (renderer.capabilities.isWebGL2 === false) {
+
+            this.gpuCompute.setDataType(THREE.HalfFloatType);
+
         }
-      ]),
-      vertexShader: document.getElementById('waterVertexShader').textContent,
-      fragmentShader: THREE.ShaderChunk['meshphong_frag']
-  
-    });
-  
-    material.lights = true;
-  
-    // Material attributes from THREE.MeshPhongMaterial
-    // Sets the uniforms with the material values
-    material.uniforms['diffuse'].value = new THREE.Color(materialColor);
-    material.uniforms['specular'].value = new THREE.Color(0x111111);
-    material.uniforms['shininess'].value = Math.max(50, 1e-4);
-    material.uniforms['opacity'].value = material.opacity;
-  
-    // Defines
-    material.defines.WIDTHX = WIDTHX.toFixed(1);
-    material.defines.WIDTHY = WIDTHY.toFixed(1);
-    material.defines.BOUNDSX = BOUNDSX.toFixed(1);
-    material.defines.BOUNDSY = BOUNDSY.toFixed(1);
-  
-    waterUniforms = material.uniforms;
-  
-    waterMesh = new THREE.Mesh(geometry, material);
-    waterMesh.rotation.x = - Math.PI / 2;
-    waterMesh.matrixAutoUpdate = false;
-    waterMesh.position.set(0, 0.5, 0);
-    waterMesh.updateMatrix();
-  
-    waterPool.add(waterMesh);
-  
-    // Creates the gpu computation class and sets it up
-  
-    gpuCompute = new GPUComputationRenderer(WIDTHX, WIDTHY, renderer);
-  
-    if (renderer.capabilities.isWebGL2 === false) {
-  
-      gpuCompute.setDataType(THREE.HalfFloatType);
-  
+
+        const heightmap0 = this.gpuCompute.createTexture();
+
+        this.heightmapVariable = this.gpuCompute.addVariable('heightmap', document.getElementById('heightmapFragmentShader').textContent, heightmap0);
+
+        this.gpuCompute.setVariableDependencies(this.heightmapVariable, [this.heightmapVariable]);
+
+        this.heightmapVariable.material.uniforms['pos'] = { value: new THREE.Vector2(0, 0) };
+        this.heightmapVariable.material.uniforms['size'] = { value: 1.0 };
+        this.heightmapVariable.material.uniforms['viscosityConstant'] = { value: 0.98 };
+        this.heightmapVariable.material.uniforms['heightCompensation'] = { value: 0 };
+        this.heightmapVariable.material.defines.BOUNDSX = this.BOUNDSX.toFixed(1);
+        this.heightmapVariable.material.defines.BOUNDSY = this.BOUNDSY.toFixed(1);
+
+        const error = this.gpuCompute.init();
+        if (error !== null) {
+
+            console.error(error);
+
+        }
+
+        // Create compute shader to read water level
+        this.readWaterLevelShader = this.gpuCompute.createShaderMaterial(document.getElementById('readWaterLevelFragmentShader').textContent, {
+            point1: { value: new THREE.Vector2() },
+            levelTexture: { value: null }
+        });
+        this.readWaterLevelShader.defines.WIDTHX = this.WIDTHX.toFixed(1);
+        this.readWaterLevelShader.defines.WIDTHY = this.WIDTHY.toFixed(1);
+        this.readWaterLevelShader.defines.BOUNDSX = this.BOUNDSX.toFixed(1);
+        this.readWaterLevelShader.defines.BOUNDSY = this.BOUNDSY.toFixed(1);
+
+        // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
+        this.readWaterLevelImage = new Uint8Array(4 * 1 * 4);
+
+        this.readWaterLevelRenderTarget = new THREE.WebGLRenderTarget(4, 1, {
+            wrapS: THREE.ClampToEdgeWrapping,
+            wrapT: THREE.ClampToEdgeWrapping,
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter,
+            format: THREE.RGBAFormat,
+            type: THREE.UnsignedByteType,
+            depthBuffer: false
+        });
     }
-  
-    const heightmap0 = gpuCompute.createTexture();
-  
-    heightmapVariable = gpuCompute.addVariable('heightmap', document.getElementById('heightmapFragmentShader').textContent, heightmap0);
-  
-    gpuCompute.setVariableDependencies(heightmapVariable, [heightmapVariable]);
-  
-    heightmapVariable.material.uniforms['pos'] = { value: new THREE.Vector2(0, 0) };
-    heightmapVariable.material.uniforms['size'] = { value: 1.0 };
-    heightmapVariable.material.uniforms['viscosityConstant'] = { value: 0.98 };
-    heightmapVariable.material.uniforms['heightCompensation'] = { value: 0 };
-    heightmapVariable.material.defines.BOUNDSX = BOUNDSX.toFixed(1);
-    heightmapVariable.material.defines.BOUNDSY = BOUNDSY.toFixed(1);
-  
-    const error = gpuCompute.init();
-    if (error !== null) {
-  
-      console.error(error);
-  
-    }
-  
-    // Create compute shader to read water level
-    readWaterLevelShader = gpuCompute.createShaderMaterial(document.getElementById('readWaterLevelFragmentShader').textContent, {
-      point1: { value: new THREE.Vector2() },
-      levelTexture: { value: null }
-    });
-    readWaterLevelShader.defines.WIDTHX = WIDTHX.toFixed(1);
-    readWaterLevelShader.defines.WIDTHY = WIDTHY.toFixed(1);
-    readWaterLevelShader.defines.BOUNDSX = BOUNDSX.toFixed(1);
-    readWaterLevelShader.defines.BOUNDSY = BOUNDSY.toFixed(1);
-  
-    // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
-    readWaterLevelImage = new Uint8Array(4 * 1 * 4);
-  
-    readWaterLevelRenderTarget = new THREE.WebGLRenderTarget(4, 1, {
-      wrapS: THREE.ClampToEdgeWrapping,
-      wrapT: THREE.ClampToEdgeWrapping,
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter,
-      format: THREE.RGBAFormat,
-      type: THREE.UnsignedByteType,
-      depthBuffer: false
-    });
-  
-  }
+}
