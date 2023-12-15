@@ -12,6 +12,7 @@ import { CSMHelper } from 'three/addons/csm/CSMHelper.js';
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
 import { gsap } from "gsap";
 import Pool from './swimmingPool.js';
+import Hill from './hill.js/';
 
 // Debug
 let debugging = false;
@@ -29,15 +30,15 @@ let cameraChoice = 2;
 let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
 let swimmingPools = [];
-let texture, mesh;
+// let texture, mesh;
 const clock = new THREE.Clock();
 
-const worldWidth = 256, worldDepth = 256;
+// const worldWidth = 256, worldDepth = 256;
 
 // const gltfLoader = new GLTFLoader();
-const threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg")
-const fourTone = new THREE.TextureLoader().load("./gradientMap/fourTone.jpg")
-const fiveTone = new THREE.TextureLoader().load("./gradientMap/fiveTone.jpg")
+// const threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg")
+// const fourTone = new THREE.TextureLoader().load("./gradientMap/fourTone.jpg")
+// const fiveTone = new THREE.TextureLoader().load("./gradientMap/fiveTone.jpg")
 
 // pointer lock controls
 let moveForward = false;
@@ -115,9 +116,9 @@ function init() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   app.appendChild(renderer.domElement);
 
-  threeTone.minFilter = threeTone.magFilter =
-    fourTone.minFilter = fourTone.magFilter =
-    fiveTone.minFilter = fiveTone.magFilter = THREE.NearestFilter;
+  // threeTone.minFilter = threeTone.magFilter =
+  //   fourTone.minFilter = fourTone.magFilter =
+  //   fiveTone.minFilter = fiveTone.magFilter = THREE.NearestFilter;
 
   // scene
   scene = new THREE.Scene();
@@ -197,10 +198,18 @@ function init() {
   }
 
   // make swimming pool
-  let newPool = new Pool(1247, 950, 346, 0, true, scene, renderer, csm);
-  newPool.addModels();
-  newPool.addCharacter();
-  swimmingPools.push(newPool);
+  let newHill = new Hill(csm, scene);
+  let newPool1 = new Pool(1247, 950, 346, 0, true, newHill, renderer, csm);
+  //newPool.addModels();
+  //newPool.addCharacter();
+  //swimmingPools.push(newPool);
+
+  //let newPool2 = new Pool(1252, 1033, -3022, 2, true, scene, renderer, csm);
+  //let newPool3 = new Pool(235, 499, -580, 1.6, true, scene, renderer, csm);
+  //let newPool4 = new Pool(-1699, 295, -2106, 3.2, true, scene, renderer, csm);
+  //let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, true, scene, renderer, csm);
+  //let newPool6 = new Pool(1965, 677, 3593, 0.4, true, scene, renderer, csm);
+  
   // makePools(1247, 950, 346, 0, true, scene, renderer);
   // makePools(1252, 1033, -3022, 2, false);
   // // makePools(235, 499, -580, 1.6, false);
@@ -220,53 +229,53 @@ function init() {
 
   window.addEventListener("resize", onResize);
 
-  // generate mountains
-  const data = generateHeight(worldWidth, worldDepth);
+  // // generate mountains
+  // const data = generateHeight(worldWidth, worldDepth);
 
-  let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
-  geometry.rotateX(- Math.PI / 2);
+  // let geometry = new THREE.PlaneGeometry(7500, 7500, worldWidth - 1, worldDepth - 1);
+  // geometry.rotateX(- Math.PI / 2);
 
-  const vertices = geometry.attributes.position.array;
+  // const vertices = geometry.attributes.position.array;
 
-  for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
+  // for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
 
-    // height of the geometry, j + 1 is the y axis
-    vertices[j + 1] = data[i] * 10;
+  //   // height of the geometry, j + 1 is the y axis
+  //   vertices[j + 1] = data[i] * 10;
 
-  }
+  // }
 
-  //geometry = BufferGeometryUtils.mergeVertices(geometry, 0.1);
-  geometry.computeVertexNormals(true);
+  // //geometry = BufferGeometryUtils.mergeVertices(geometry, 0.1);
+  // geometry.computeVertexNormals(true);
 
-  //texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
+  // //texture = new THREE.CanvasTexture(generateTexture(data, worldWidth, worldDepth));
 
 
-  texture = new THREE.MeshToonMaterial({
+  // texture = new THREE.MeshToonMaterial({
 
-    color: 'rgb(222, 131, 62)',
-    wireframe: false,
-    side: THREE.DoubleSide,
-    gradientMap: fiveTone,
+  //   color: 'rgb(222, 131, 62)',
+  //   wireframe: false,
+  //   side: THREE.DoubleSide,
+  //   gradientMap: fiveTone,
 
-  });
-  texture.warpS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.colorSpace = THREE.SRGBColorSpace;
+  // });
+  // texture.warpS = THREE.RepeatWrapping;
+  // texture.wrapT = THREE.RepeatWrapping;
+  // texture.colorSpace = THREE.SRGBColorSpace;
 
-  csm.setupMaterial(texture);
+  // csm.setupMaterial(texture);
 
-  //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
-  mesh = new THREE.Mesh(geometry, texture);
+  // //mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
+  // mesh = new THREE.Mesh(geometry, texture);
 
-  mesh.visible = true;
-  mesh.receiveShadow = true;
+  // mesh.visible = true;
+  // mesh.receiveShadow = true;
 
-  scene.add(mesh);
+  // scene.add(mesh);
 
-  if (debugging) {
-    sceneUI.add(mesh, 'visible').name('Mesh Visibility');
-    sceneUI.add(mesh.material, 'wireframe').name('Wireframe');
-  }
+  // if (debugging) {
+  //   sceneUI.add(mesh, 'visible').name('Mesh Visibility');
+  //   sceneUI.add(mesh.material, 'wireframe').name('Wireframe');
+  // }
 
   // stats monitor
   stats = new Stats();
@@ -278,37 +287,37 @@ function init() {
 //------------------------------------------ Perlin Noise ----------------------------------------------
 
 
-function generateHeight(width, height) {
+// function generateHeight(width, height) {
 
-  let seed = Math.PI / 4;
-  window.Math.random = () => {
+//   let seed = Math.PI / 4;
+//   window.Math.random = () => {
 
-    const x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
+//     const x = Math.sin(seed++) * 10000;
+//     return x - Math.floor(x);
 
-  }
+//   }
 
-  const size = width * height, data = new Uint8Array(size);
-  const perlin = new ImprovedNoise(), z = Math.random() * 60;
+//   const size = width * height, data = new Uint8Array(size);
+//   const perlin = new ImprovedNoise(), z = Math.random() * 60;
 
-  let quality = 1;
+//   let quality = 1;
 
-  for (let j = 0; j < 4; j++) {
+//   for (let j = 0; j < 4; j++) {
 
-    for (let i = 0, l = 10; i < size; i++) {
+//     for (let i = 0, l = 10; i < size; i++) {
 
-      const x = i % width, y = ~ ~(i / width);
-      data[i] += Math.abs(perlin.noise(x / quality, y / quality, z) * quality * 1.75);
+//       const x = i % width, y = ~ ~(i / width);
+//       data[i] += Math.abs(perlin.noise(x / quality, y / quality, z) * quality * 1.75);
 
-    }
+//     }
 
-    quality *= 5;
+//     quality *= 5;
 
-  }
+//   }
 
-  return data;
+//   return data;
 
-}
+// }
 
 //---------------------------------------- Pointer Lock Control --------------------------------------------
 
