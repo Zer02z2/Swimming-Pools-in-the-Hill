@@ -37,7 +37,7 @@ let moveUpward = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-let moveSpeed = 1000;
+let moveSpeed = 4000;
 
 // CSM param
 const params = {
