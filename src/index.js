@@ -10,7 +10,8 @@ import Pool from './swimmingPool.js';
 import Hill from './hill.js/';
 
 // Debug
-let debugging = true;
+let debugging = false;
+let isFogged = false;
 let gui, sceneUI, poolUI, viewPortUI;
 if (debugging) {
   gui = new GUI();
@@ -19,7 +20,7 @@ if (debugging) {
 
 
 // variables
-let cameraChoice = 1;
+let cameraChoice = 2;
 let app;
 let camera, controls, scene, renderer, stats, csm, csmHelper;
 let hills = [];
@@ -83,17 +84,17 @@ function init() {
   // scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xefd1b5);
-  if (!debugging) scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
+  if (isFogged) scene.fog = new THREE.FogExp2(0xefd1b5, 0.0005);
 
   // perspective camera
   camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
     1,
-    20000
+    4000
   );
-  camera.position.set(1747, 1200, 513);
-  camera.lookAt(1247, 1000, 313);
+  camera.position.set(-2003, 1200, -3237);
+  camera.lookAt(-2503, 1000, -3437);
 
   // axis helper -> X: red, Y: green, Z: blue
   const axesHelper = new THREE.AxesHelper(500);
@@ -158,25 +159,55 @@ function init() {
   }
 
   // make swimming pool
-  const makeHill = () => {
 
+  const makePool = (hill) => {
+    let newPool1 = new Pool(1247, 950, 346, 0, hill, renderer, csm);
+    swimmingPools.push(newPool1);
+    let newPool2 = new Pool(1252, 1033, -3022, 2, hill, renderer, csm);
+    swimmingPools.push(newPool2);
+    let newPool3 = new Pool(-326, 610, 2625, - 2.5, hill, renderer, csm);
+    swimmingPools.push(newPool3);
+    let newPool4 = new Pool(-1699, 295, -2106, 3.2, hill, renderer, csm);
+    swimmingPools.push(newPool4);
+    let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, hill, renderer, csm);
+    swimmingPools.push(newPool5);
+    let newPool6 = new Pool(2722, 350, 1542, -2.2, hill, renderer, csm);
+    swimmingPools.push(newPool6);
+  }
+  const makeHill = (hill) => {
+
+    let x = 1;
+    let xPos = -2.5;
+
+    for (let i = 0; i < 4; i ++) {
+      x *= -1;
+      xPos += 1;
+      let z = 1;
+      let zPos = -2.5
+
+      for (let k = 0; k < 4; k ++) {
+        z *= -1;
+        zPos += 1;
+
+        let newHill = hill.clone();
+        newHill.scale.set(x, 1, z);
+        newHill.position.set(
+          xPos * (7500),
+          0,
+          zPos * (7500));
+
+        makePool(newHill);
+        scene.add(newHill);
+      }
+    }
 
   }
-  let newHill = new Hill(7500, 7500, csm, scene);
-  hills.push(newHill);
+  let hill = new Hill(7500, 7500, csm, scene);
 
-  let newPool1 = new Pool(1247, 950, 346, 0, newHill, renderer, csm);
-  swimmingPools.push(newPool1);
-  let newPool2 = new Pool(1252, 1033, -3022, 2, newHill, renderer, csm);
-  swimmingPools.push(newPool2);
-  let newPool3 = new Pool(-326, 610, 2625, - 2.5, newHill, renderer, csm);
-  swimmingPools.push(newPool3);
-  let newPool4 = new Pool(-1699, 295, -2106, 3.2, newHill, renderer, csm);
-  swimmingPools.push(newPool4);
-  let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, newHill, renderer, csm);
-  swimmingPools.push(newPool5);
-  let newPool6 = new Pool(2722, 350, 1542, -2.2, newHill, renderer, csm);
-  swimmingPools.push(newPool6);
+  // makePool(newHill);
+
+  makeHill(hill.group);
+
 
   if (debugging == true) {
     
@@ -202,7 +233,7 @@ function init() {
 
   // stats monitor
   stats = new Stats();
-  if (debugging) document.body.appendChild(stats.dom);
+  document.body.appendChild(stats.dom);
 }
 
 

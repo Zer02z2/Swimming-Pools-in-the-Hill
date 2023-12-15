@@ -8,7 +8,6 @@ export default class Hill {
     this.width = width;
     this.height = height;
     this.group = new THREE.Group();
-    this.poolList = [];
     this.worldWidth = 256;
     this.worldDepth = 256;
 
@@ -62,7 +61,7 @@ export default class Hill {
     this.mesh.receiveShadow = true;
 
     this.group.add(this.mesh);
-    scene.add(this.group);
+    //scene.add(this.group);
 
     // if (debugging) {
     //     sceneUI.add(mesh, 'visible').name('Mesh Visibility');
@@ -70,10 +69,9 @@ export default class Hill {
     // }
   }
 
-  add(pool) {
-    this.group.add(pool);
-    this.poolList.push(pool);
-  }
+  // add(pool) {
+  //   this.group.add(pool);
+  // }
 }
 
 function generateHeight(width, height) {
