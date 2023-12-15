@@ -163,17 +163,17 @@ function init() {
   let newHill = new Hill(csm, scene);
   hills.push(newHill);
 
-  let newPool1 = new Pool(1247, 950, 346, 0, true, newHill, renderer, csm);
+  let newPool1 = new Pool(1247, 950, 346, 0, newHill, renderer, csm);
   swimmingPools.push(newPool1);
-  let newPool2 = new Pool(1252, 1033, -3022, 2, true, newHill, renderer, csm);
+  let newPool2 = new Pool(1252, 1033, -3022, 2, newHill, renderer, csm);
   swimmingPools.push(newPool2);
-  let newPool3 = new Pool(235, 499, -580, 1.6, true, newHill, renderer, csm);
+  let newPool3 = new Pool(235, 499, -580, 1.6, newHill, renderer, csm);
   swimmingPools.push(newPool3);
-  let newPool4 = new Pool(-1699, 295, -2106, 3.2, true, newHill, renderer, csm);
+  let newPool4 = new Pool(-1699, 295, -2106, 3.2, newHill, renderer, csm);
   swimmingPools.push(newPool4);
-  let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, true, newHill, renderer, csm);
+  let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, newHill, renderer, csm);
   swimmingPools.push(newPool5);
-  let newPool6 = new Pool(1965, 677, 3593, 0.4, true, newHill, renderer, csm);
+  let newPool6 = new Pool(1965, 677, 3593, 0.4, newHill, renderer, csm);
   swimmingPools.push(newPool6);
 
   // resize
@@ -410,6 +410,10 @@ function render() {
 
     if (p.character) {
       let dist = camera.position.distanceTo(p.character.getWorldPosition(new THREE.Vector3()));
+
+      if (dist < 500) p.updateWater(true);
+      else p.updateWater(false);
+      
       if (dist < 400 && p.inIdle) {
         console.log('close');
         p.mixer._actions[0].setEffectiveWeight(0);

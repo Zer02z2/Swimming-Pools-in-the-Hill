@@ -6,7 +6,7 @@ import { gsap } from "gsap";
 
 export default class SwimmingPool {
 
-    constructor(x, y, z, r, w, scene, renderer, csm) {
+    constructor(x, y, z, r, scene, renderer, csm) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -66,21 +66,21 @@ export default class SwimmingPool {
             water.heightmapVariable.material.uniforms['viscosityConstant'].value = 0.98;
         };
 
-        if (w == true) {
-            this.water = new Water(this.waterPool, renderer);
-            valuesChanger(this.water);
-        } else {
 
-            let waterMaterial = new THREE.MeshStandardMaterial({
-                color: 'rgb(1, 34, 117)',
-                metalness: 0.8
-            });
-            let water = new THREE.Mesh(baseGeometry, waterMaterial);
-            water.scale.set(16, 1, 8);
-            water.position.set(0, 0.1, 0);
-            this.waterPool.add(water);
+        this.water = new Water(this.waterPool, renderer);
+        valuesChanger(this.water);
 
-        }
+
+        let waterMaterial = new THREE.MeshPhongMaterial({
+            color: '#031745',
+        });
+        this.waterPlate = new THREE.Mesh(this.baseGeometry, waterMaterial);
+        this.waterPlate.scale.set(this.water.BOUNDSX, 1, this.water.BOUNDSY);
+        this.waterPlate.position.set(0, 0.1, 0);
+        this.waterPool.add(this.waterPlate);
+        this.waterPlate.visible = false;
+
+
 
 
         // padding
@@ -147,6 +147,13 @@ export default class SwimmingPool {
 
         this.addModels();
         this.addCharacter();
+    }
+
+    updateWater(close) {
+
+        if (close) this.waterPlate.visible = false;
+        else this.waterPlate.visible = true;
+
     }
 
     addModels() {
