@@ -34,7 +34,7 @@ const clock = new THREE.Clock();
 
 const worldWidth = 256, worldDepth = 256;
 
-const gltfLoader = new GLTFLoader();
+// const gltfLoader = new GLTFLoader();
 const threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg")
 const fourTone = new THREE.TextureLoader().load("./gradientMap/fourTone.jpg")
 const fiveTone = new THREE.TextureLoader().load("./gradientMap/fiveTone.jpg")
@@ -199,6 +199,7 @@ function init() {
   // make swimming pool
   let newPool = new Pool(1247, 950, 346, 0, true, scene, renderer, csm);
   newPool.addModels();
+  newPool.addCharacter();
   swimmingPools.push(newPool);
   // makePools(1247, 950, 346, 0, true, scene, renderer);
   // makePools(1252, 1033, -3022, 2, false);

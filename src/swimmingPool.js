@@ -442,19 +442,19 @@ export default class SwimmingPool {
                 })
 
                 this.mixer = new THREE.AnimationMixer(character.scene);
-                this.idleAction = mixer.clipAction(character.animations[4]);
+                this.idleAction = this.mixer.clipAction(character.animations[4]);
 
-                this.diveAction = mixer.clipAction(character.animations[2]);
+                this.diveAction = this.mixer.clipAction(character.animations[2]);
                 this.diveAction.loop = THREE.LoopOnce;
 
-                this.climbAction = mixer.clipAction(character.animations[1]);
+                this.climbAction = this.mixer.clipAction(character.animations[1]);
                 this.climbAction.loop = THREE.LoopOnce;
 
-                this.standAction = mixer.clipAction(character.animations[5]);
+                this.standAction = this.mixer.clipAction(character.animations[5]);
                 this.standAction.loop = THREE.LoopOnce;
                 //standAction.clampWhenFinished = true;
 
-                this.turnAction = mixer.clipAction(character.animations[6]);
+                this.turnAction = this.mixer.clipAction(character.animations[6]);
                 this.turnAction.loop = THREE.LoopOnce;
                 //turnAction.clampWhenFinished = true;
 
@@ -517,19 +517,19 @@ export default class SwimmingPool {
                             this.gettingUp = false;
                     }
                 });
+
+                // console.log(mixer._actions);
+
+                this.character.scale.set(2, 2, 2);
+                this.character.position.set(
+                    - this.water.BOUNDSX / 2 - this.waterPool.position.x,
+                    this.platform.scale.y / 2,
+                    this.waterPool.position.z);
+
+                this.character.rotateY(1.5);
+
+                this.swimmingPool.add(this.character);
             });
-
-        // console.log(mixer._actions);
-
-        this.character.scale.set(2, 2, 2);
-        this.character.position.set(
-            - BOUNDSX / 2 - this.waterPool.position.x,
-            this.platform.scale.y / 2,
-            this.waterPool.position.z);
-
-        this.character.rotateY(1.5);
-
-        this.swimmingPool.add(this.character);
     }
 
 
