@@ -13,7 +13,7 @@ import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer
 import { gsap } from "gsap";
 
 // Debug
-let debugging = true;
+let debugging = false;
 let gui, sceneUI, poolUI, viewPortUI;
 if (debugging) {
   gui = new GUI();
@@ -49,7 +49,7 @@ let moveUpward = false;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-let moveSpeed = 1000;
+let moveSpeed = 10000;
 
 // CSM param
 const params = {
@@ -256,6 +256,7 @@ function init() {
   mesh = new THREE.Mesh(geometry, texture);
 
   mesh.visible = true;
+  mesh.receiveShadow = true;
 
   scene.add(mesh);
 
@@ -522,6 +523,7 @@ function render() {
     if (dist < 400 && inIdle) {
       console.log('close');
       mixers[0]._actions[0].setEffectiveWeight(0);
+      mixers[0]._actions[1].setEffectiveWeight(1);
       mixers[0]._actions[1].reset();
       mixers[0]._actions[1].play();
       inIdle = false;
@@ -1076,26 +1078,24 @@ function makePools(x, y, z, r, w) {
         switch (m.action._clip.name) {
 
           case 'idle2':
-            // console.log('hi');
-            // diveAction.reset();
-            // diveAction.crossFadeFrom(idleAction, 0.2, true);
-            // diveAction.play();
             break;
 
           case 'dive':
             console.log("dived");
+            diveAction.setEffectiveWeight(0);
+            climbAction.setEffectiveWeight(1);
             diving = true;
             character.scene.position.set(
               - BOUNDSX / 2 - waterPool.position.x + 2.5,
               platform.scale.y / 2 - 3,
               waterPool.position.z);
               character.scene.rotateY(3);
-            // climbAction.reset();
-            // climbAction.play();
             break;
 
           case 'climb':
             console.log('climbed');
+            climbAction.setEffectiveWeight(0);
+            standAction.setEffectiveWeight(1);
             character.scene.position.set(
               - BOUNDSX / 2 - waterPool.position.x + 1,
               platform.scale.y / 2,
@@ -1106,6 +1106,8 @@ function makePools(x, y, z, r, w) {
 
           case 'standUp':
             console.log('stood');
+            standAction.setEffectiveWeight(0);
+            turnAction.setEffectiveWeight(1);
             gsap.to(character.scene.position, {
               x: - BOUNDSX / 2 - waterPool.position.x,
               duration: 1,
@@ -1117,10 +1119,11 @@ function makePools(x, y, z, r, w) {
 
           case 'turn':
             console.log('turned');
-            character.scene.rotateY(1.5);
+            turnAction.setEffectiveWeight(0);
+            idleAction.setEffectiveWeight(1);
+            character.scene.rotateY(-3);
             idleAction.reset();
             // idleAction.crossFadeFrom(turnAction, 0.5, true);
-            idleAction.setEffectiveWeight(1);
             idleAction.play();
             inIdle = true;
             gettingUp = false;
