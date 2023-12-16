@@ -97,9 +97,9 @@ function init() {
   camera.lookAt(-2503, 1000, -3437);
 
   // axis helper -> X: red, Y: green, Z: blue
-  const axesHelper = new THREE.AxesHelper(500);
-  axesHelper.position.y = 0.001; // above the ground slightly
-  scene.add(axesHelper);
+  // const axesHelper = new THREE.AxesHelper(500);
+  // axesHelper.position.y = 0.001; // above the ground slightly
+  // scene.add(axesHelper);
   if (debugging) {
     sceneUI.add(axesHelper, 'visible').name('Axes Helper');
     sceneUI.add(axesHelper.position, 'y', 0, 1000, 1).name('Helper Height');
@@ -107,8 +107,8 @@ function init() {
 
 
   // grid helper
-  const gridHelper = new THREE.GridHelper(10000, 1000, "#444444", "#cccccc");
-  scene.add(gridHelper);
+  // const gridHelper = new THREE.GridHelper(10000, 1000, "#444444", "#cccccc");
+  // scene.add(gridHelper);
 
   // ambient light
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
