@@ -7,7 +7,7 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 export default class SwimmingPool {
 
-    constructor(x, y, z, r, scene, renderer, csm) {
+    constructor(x, y, z, r, scene, renderer, csm, loadingManager) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -18,7 +18,7 @@ export default class SwimmingPool {
         this.viewPort = new THREE.Group();
 
         // model loader
-        this.gltfLoader = new GLTFLoader();
+        this.gltfLoader = new GLTFLoader(loadingManager);
         this.threeTone = new THREE.TextureLoader().load("./gradientMap/threeTone.jpg");
         this.fourTone = new THREE.TextureLoader().load("./gradientMap/fourTone.jpg");
         this.fiveTone = new THREE.TextureLoader().load("./gradientMap/fiveTone.jpg");

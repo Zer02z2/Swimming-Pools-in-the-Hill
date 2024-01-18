@@ -28,6 +28,21 @@ let swimmingPools = [];
 // let texture, mesh;
 const clock = new THREE.Clock();
 
+// html, css
+const blocker = document.getElementById('blocker');
+const instructions = document.getElementById('instructions');
+const loadingBar = document.querySelector('.loading-bar');
+
+let loadingManager = new THREE.LoadingManager(
+  () => { // loaded
+    console.log('Loading complete');
+  },
+  (itemUrl, itemsLoaded, itemsTotal) => {
+    console.log(itemsLoaded / itemsTotal);
+    loadingBar.style.transform = `scaleX(${itemsLoaded / itemsTotal})`;
+  }
+)
+
 // pointer lock controls
 let moveForward = false;
 let moveBackward = false;
@@ -161,17 +176,17 @@ function init() {
   // make swimming pool
 
   const makePool = (hill) => {
-    let newPool1 = new Pool(1247, 950, 346, 0, hill, renderer, csm);
+    let newPool1 = new Pool(1247, 950, 346, 0, hill, renderer, csm, loadingManager);
     swimmingPools.push(newPool1);
-    let newPool2 = new Pool(1252, 1033, -3022, 2, hill, renderer, csm);
+    let newPool2 = new Pool(1252, 1033, -3022, 2, hill, renderer, csm, loadingManager);
     swimmingPools.push(newPool2);
-    let newPool3 = new Pool(-346, 610, 2525, - 2.5, hill, renderer, csm);
+    let newPool3 = new Pool(-346, 610, 2525, - 2.5, hill, renderer, csm, loadingManager);
     swimmingPools.push(newPool3);
-    let newPool4 = new Pool(-1699, 295, -2106, 3.2, hill, renderer, csm);
+    let newPool4 = new Pool(-1699, 295, -2106, 3.2, hill, renderer, csm, loadingManager);
     swimmingPools.push(newPool4);
-    let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, hill, renderer, csm);
+    let newPool5 = new Pool(- 1903, 1211, -71, - 1.5, hill, renderer, csm, loadingManager);
     swimmingPools.push(newPool5);
-    let newPool6 = new Pool(2722, 350, 1542, -2.2, hill, renderer, csm);
+    let newPool6 = new Pool(2722, 350, 1542, -2.2, hill, renderer, csm, loadingManager);
     swimmingPools.push(newPool6);
   }
   const makeHill = (hill) => {
@@ -203,8 +218,6 @@ function init() {
 
   }
   let hill = new Hill(7500, 7500, csm, scene);
-
-  // makePool(newHill);
 
   makeHill(hill.group);
 
@@ -414,9 +427,6 @@ function updateControls() {
 function animate() {
 
   requestAnimationFrame(animate);
-
-  const blocker = document.getElementById('blocker');
-  const instructions = document.getElementById('instructions');
 
   if (cameraChoice == 1) {
 

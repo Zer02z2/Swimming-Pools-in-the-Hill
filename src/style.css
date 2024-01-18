@@ -74,3 +74,14 @@ p {
   font-size: 28px;
 
 }
+
+.loading-bar {
+  margin-top: 20px;
+  margin-bottom: 50px;
+  width: 20%;
+  height: 8px;
+  background: rgba(50, 50, 50, 1);
+  transform: scaleX(0);
+  transform-origin: top left;
+  transition: transform 0.5s linear;
+}
