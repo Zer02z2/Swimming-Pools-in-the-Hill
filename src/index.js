@@ -31,14 +31,17 @@ const clock = new THREE.Clock();
 // html, css
 const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
+const clickToBegin = document.getElementById('clickToBegin');
 const loadingBar = document.querySelector('.loading-bar');
+console.log(instructions);
 
 let loadingManager = new THREE.LoadingManager(
   () => { // loaded
-    console.log('Loading complete');
+    blocker.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+    clickToBegin.innerHTML = 'Click to Enter';
+    loadingBar.style.visibility = 'hidden';
   },
   (itemUrl, itemsLoaded, itemsTotal) => {
-    console.log(itemsLoaded / itemsTotal);
     loadingBar.style.transform = `scaleX(${itemsLoaded / itemsTotal})`;
   }
 )
@@ -215,7 +218,6 @@ function init() {
         scene.add(newHill);
       }
     }
-
   }
   let hill = new Hill(7500, 7500, csm, scene);
 

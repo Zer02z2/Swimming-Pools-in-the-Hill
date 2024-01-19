@@ -58,7 +58,7 @@ export default class Hill {
     this.mesh = new THREE.Mesh(this.geometry, this.texture);
 
     this.mesh.visible = true;
-    this.mesh.receiveShadow = true;
+    // this.mesh.receiveShadow = true;
 
     this.group.add(this.mesh);
     //scene.add(this.group);

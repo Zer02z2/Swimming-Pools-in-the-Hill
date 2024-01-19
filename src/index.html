@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+	<link rel="stylesheet" href='./style.css'>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inifite Swimming Pools</title> 
+    <title>Infinite Swimming Pools</title> 
   </head>
   <body>
 
     <div id="blocker">
 		<div id="instructions">
-			<h1>
-				Click to enter<br/>
+			<h1 id="clickToBegin">
+				Loading<br/>
         	</h1>
-			<h1>hi</h1>
 			<div class = 'loading-bar'></div>
 			<p>
 				Move: WASD<br/>
 				Look: MOUSE
 			</p>
+		</div>
+		<div class="nameTag">
+			<p2>Infinite Swimming Pools</p2><br/>
+			- by Zongze Chen
 		</div>
 	</div>
 
@@ -239,6 +243,5 @@
     <div id="app"></div>
 
     <script type="module" src="./index.js"></script>
-    <!--script type="module" src="./test.js"></script-->
   </body>
 </html>
