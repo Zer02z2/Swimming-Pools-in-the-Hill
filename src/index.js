@@ -29,17 +29,20 @@ let swimmingPools = [];
 const clock = new THREE.Clock();
 
 // html, css
+let clickable = false;
 const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
 const clickToBegin = document.getElementById('clickToBegin');
-const loadingBar = document.querySelector('.loading-bar');
+const loadingBarBox = document.querySelector('.loading-bar')
+const loadingBar = document.querySelector('.loading-bar .bar');
 console.log(instructions);
 
 let loadingManager = new THREE.LoadingManager(
   () => { // loaded
     blocker.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
     clickToBegin.innerHTML = 'Click to Enter';
-    loadingBar.style.visibility = 'hidden';
+    loadingBarBox.style.visibility = 'hidden';
+    clickable = true;
   },
   (itemUrl, itemsLoaded, itemsTotal) => {
     loadingBar.style.transform = `scaleX(${itemsLoaded / itemsTotal})`;
@@ -261,7 +264,7 @@ function createControls() {
 
   instructions.addEventListener('click', function () {
 
-    controls.lock();
+    if (clickable == true) controls.lock();
 
   });
 

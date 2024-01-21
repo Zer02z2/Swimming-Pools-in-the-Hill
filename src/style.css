@@ -88,11 +88,23 @@ p {
 }
 
 .loading-bar {
-  margin-top: 50px;
-  margin-bottom: 50px;
-  width: 20%;
-  height: 8px;
-  background: rgba(50, 50, 50, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  width: 30rem;
+  height: 1rem;
+  background-color: rgba(50, 50, 50, 0.1);
+  border-radius: 0.1rem;
+}
+
+.loading-bar .bar {
+  width: 30rem;
+  height: 1rem;
+  background-color: rgba(50, 50, 50, 1);
   border-radius: 0.1rem;
   transform: scaleX(0);
   transform-origin: top left;
